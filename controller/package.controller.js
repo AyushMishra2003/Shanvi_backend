@@ -42,7 +42,7 @@ const getPackage=async(req,res,next)=>{
           model: 'PackageDetail', // Referencing the PackageDetail model
         });
     
-        console.log(allPackages);
+
 
         res.status(200).json({
             success:true,
@@ -95,9 +95,9 @@ const deletePackage=async(req,res,next)=>{
 const addPackageDetails=async(req,res,next)=>{
     try{
        
-        const {packageCategory,packageRate,packageDiscount,parameterInclude,report,packagesParameter}=req.body
+        const {packageCategory,packageRate,packageDiscount,parameterInclude,report,parameters,packageName,packageOverview}=req.body
 
-        console.log(req.body);
+        console.log("req body is ",req.body);
         
 
         const {packageId}=req.params
@@ -109,12 +109,14 @@ const addPackageDetails=async(req,res,next)=>{
             return next(new AppError("Packages not Found",400))
         }
 
-        const formattedPackages = Array.isArray(packagesParameter)
-        ? packagesParameter.map((item) => ({
-            parameterName: item?.parameterName,
-            description: item?.content,
-          }))
-        : [];
+        // const formattedPackages = Array.isArray(packagesParameter)
+        // ? packagesParameter.map((item) => ({
+        //     parameterName: item?.parameterName,
+        //     description: item?.content,
+        //   }))
+        // : [];
+
+        const parsedParameters = JSON.parse(parameters);
 
         const addPackageDetail=new PackageDetail({
             packageCategory,
@@ -122,11 +124,16 @@ const addPackageDetails=async(req,res,next)=>{
             packageDiscount,
             parameterInclude,
             report,
-            packagesParameter:formattedPackages,
+            packagesParamter: parsedParameters.map(param => ({
+              parameterName: param.parameterName,
+              description: param.description,
+            })),
             packagePhoto:{
                 public_id:"",
                 secure_url:""
             },
+            packageName,
+            packageOverview,
               packageId, // Link to Package
         })
 

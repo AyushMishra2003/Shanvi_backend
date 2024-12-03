@@ -34,7 +34,8 @@ app.use(
       "https://ucscab.com",
       "https://master.ucscab.com",
       "https://drmanasaggrawalji.netlify.app",
-      "https://drmanasdashboard.netlify.app"
+      "https://drmanasdashboard.netlify.app",
+      "https://ayush.webakash1806.com"
     ],
     credentials: true,
   })

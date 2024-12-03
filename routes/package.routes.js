@@ -5,7 +5,7 @@ import upload from "../middleware/multer.middleware.js";
 
 const packageRouter=Router()
 
-packageRouter.post("/",addPackage)
+packageRouter.post("/",addPackage)  
 packageRouter.get("/",getPackage)
 packageRouter.post("/detail/:packageId",upload.single("packagePhoto"),addPackageDetails)
 packageRouter.get("/detail/:packageId",getPackageDetails)

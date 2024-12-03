@@ -21,10 +21,10 @@ const TestDetailSchema=new Schema(
          testDiscount:{
             type:Number
          },
-         testRequirnment1:{
+         testRequirement1:{
             type:String
          },
-         testRequirnment2:{
+         testRequirement2:{
             type:String
          },
          testDeliver1:{
@@ -45,7 +45,7 @@ const TestDetailSchema=new Schema(
 )
 
 
-const TestDetailModel=model("TestDetails",TestDetailSchema)
+const TestDetailModel=model("TestDetail",TestDetailSchema)
 
 
 export default TestDetailModel

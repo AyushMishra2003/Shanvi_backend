@@ -12,6 +12,12 @@ const packageDetailsSchema = new Schema(
         default: '',
       },
     },
+    packageName:{
+      type:String
+    },
+    packageOverview:{
+      type:String
+    },
     packageCategory: {
       type: String,
     },

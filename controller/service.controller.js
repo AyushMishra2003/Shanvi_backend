@@ -304,6 +304,33 @@ const deleteServiceDetail = async (req, res, next) => {
     }
 };
 
+
+const getSpecificDetail=async(req,res,next)=>{
+    try{
+
+        const {id}=req.params
+
+        console.log("id is",id);
+        
+        
+        const service=await ServiceDetailModel.findById(id)
+
+        if(!service){
+            return next(new AppError("Service not Found",404))
+        }
+
+        res.status(200).json({
+            success:true,
+            message:"Service Detail are:-",
+            data:service
+        })
+
+
+    }catch(error){
+        return next(new AppError(error.message,500))
+    }
+}
+
   
 
 
@@ -318,5 +345,6 @@ export {
     addServiceDetail,
     getServiceDetail,
     updateServiceDetail,
-    deleteServiceDetail
+    deleteServiceDetail,
+    getSpecificDetail
 }
