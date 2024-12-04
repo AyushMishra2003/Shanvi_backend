@@ -136,6 +136,9 @@ const deleteTest = async (req, res, next) => {
     try {
         const { testId } = req.params; // Extract testId from URL parameters
 
+        console.log("test id is",testId);
+        
+
         // Find the TestModel document by ID
         const test = await TestModel.findById(testId);
 
@@ -270,11 +273,17 @@ const updateTestDetails = async (req, res, next) => {
         }
 
         // Update the fields in the TestDetail document
-        for (const key in updateData) {
-            if (updateData.hasOwnProperty(key)) {
-                testDetail[key] = updateData[key];
-            }
-        }
+        // for (const key in updateData) {
+        //     if (updateData.hasOwnProperty(key)) {
+        //         testDetail[key] = updateData[key];
+        //     }
+        // }
+
+        testDetail.testDetailName=updateData?.testDetailName
+        testDetail.testPrice=updateData?.testPrice
+
+        console.log(testDetail);
+        
 
         // Save the updated document
         await testDetail.save();

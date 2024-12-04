@@ -85,10 +85,31 @@ const updatePackage=async(req,res,next)=>{
 }
 
 const deletePackage=async(req,res,next)=>{
-  res.status(200).json({
-    success:true,
-    message:"delete runnign"
-  })
+  try {
+    const { id} = req.params; // Extract service ID from params
+
+    // Find the service by ID
+    const service = await PackageModel.findById(id);
+
+    if (!service) {
+      return next(new AppError("Service not found", 404));
+    }
+
+    // Delete all related service details
+    if (service.packageDetails && service.packageDetails.length > 0) {
+      await PackageDetail.deleteMany({ _id: { $in: service.packageDetails } });
+    }
+
+    // Delete the service itself
+    await PackageModel.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Package and related details deleted successfully",
+    });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
 }
 
 
@@ -218,7 +239,7 @@ const getPackageDetails=async(req,res,next)=>{
 const updatePackageDetails = async (req, res, next) => {
     try {
       const { packageDetailId } = req.params;
-      const { packageCategory, packageRate, packageDiscount, parameterInclude, report, packagesParameter } = req.body;
+      const { packageCategory, packageRate, packageDiscount, parameterInclude, report, packagesParameter,packageOverview } = req.body;
   
       // Step 1: Find the existing PackageDetail by ID
       const existingPackageDetail = await PackageDetail.findById(packageDetailId);
@@ -232,10 +253,12 @@ const updatePackageDetails = async (req, res, next) => {
       if (packageDiscount) existingPackageDetail.packageDiscount = packageDiscount;
       if (parameterInclude) existingPackageDetail.parameterInclude = parameterInclude;
       if (report) existingPackageDetail.report = report;
+
+      if(packageOverview) existingPackageDetail.packageOverview=packageOverview
   
       // If `packagesParameter` is provided, format it and update it
       if (Array.isArray(packagesParameter)) {
-        existingPackageDetail.packagesParameter = packagesParameter.map((item) => ({
+        existingPackageDetail.packagesParamter = packagesParameter.map((item) => ({
           parameterName: item?.parameterName,
           description: item?.content,
         }));
@@ -320,5 +343,7 @@ export {
     addPackageDetails,
     getPackageDetails,
     deletePackageDetails,
-    updatePackageDetails
+    updatePackageDetails,
+    updatePackage,
+    deletePackage
 }

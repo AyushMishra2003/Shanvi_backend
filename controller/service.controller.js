@@ -219,6 +219,10 @@ const updateServiceDetail = async (req, res, next) => {
     try {
       const { serviceDetailId } = req.params; // Extract service detail ID from params
       const { serviceDetailName, serviceDetail } = req.body; // Extract fields to update
+
+
+     
+      
   
       // Check if the serviceDetailId is valid
       const existingServiceDetail = await ServiceDetailModel.findById(serviceDetailId);
