@@ -33,11 +33,6 @@ app.use(
       "http://localhost:3000",
       "http://localhost:5174",
       "https://freelance.webakash1806.com",
-      "https://ayush.webakash1806.com",
-      "https://ucscab.com",
-      "https://master.ucscab.com",
-      "https://drmanasaggrawalji.netlify.app",
-      "https://drmanasdashboard.netlify.app",
       "https://ayush.webakash1806.com"
     ],
     credentials: true,
