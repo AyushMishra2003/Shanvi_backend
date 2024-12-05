@@ -1,4 +1,4 @@
-import BlogModel from "../models/Blog.model"
+import BlogModel from "../models/Blog.model.js"
 import AppError from "../utils/error.utlis.js"
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
@@ -141,3 +141,11 @@ const addBlog=async(req,res,next)=>{
     }
   };
   
+
+
+  export {
+    addBlog,
+    getAllBlogs,
+    editBlog,
+    deleteBlog
+  }

@@ -10,6 +10,7 @@ import ServiceRouter from "./routes/service.routes.js";
 import testRouter from "./routes/test.routes.js";
 import doctorRoute from "./routes/doctor.route.js";
 import PayementRouter from "./routes/payment.route.js";
+import blogRoute from "./routes/blog.route.js";
 
 
 config();
@@ -54,6 +55,7 @@ app.use("/api/v1/service",ServiceRouter)
 app.use("/api/v1/test",testRouter)
 app.use("/api/v1/doctor",doctorRoute)
 app.use("/api/v1/payment",PayementRouter)
+app.use("/api/v1/blog",blogRoute)
 
 
 
