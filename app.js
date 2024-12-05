@@ -9,6 +9,7 @@ import packageRouter from "./routes/package.routes.js";
 import ServiceRouter from "./routes/service.routes.js";
 import testRouter from "./routes/test.routes.js";
 import doctorRoute from "./routes/doctor.route.js";
+import PayementRouter from "./routes/payment.route.js";
 
 
 config();
@@ -52,7 +53,7 @@ app.use("/api/v1/package",packageRouter)
 app.use("/api/v1/service",ServiceRouter)
 app.use("/api/v1/test",testRouter)
 app.use("/api/v1/doctor",doctorRoute)
-
+app.use("/api/v1/payment",PayementRouter)
 
 
 
