@@ -36,25 +36,56 @@ const addService=async(req,res,next)=>{
 }
 
 
-const getService=async(req,res,next)=>{
-    try{
+const getService = async (req, res, next) => {
+    try {
+        const allService = await ServiceModel.find({}).populate('serviceDetails');
 
-        const allService=await ServiceModel.find({}).populate('serviceDetails');
+        const desiredSequence = [
+            "Nuclear Medicine",
+            "Radiology",
+            "Fetal Medicine",
+            "Pathology",
+            "Cardiology",
+            "Neurology",
+        ];
 
-        if(!allService){
-            return next(new AppError("Service not Found",400))
+        if (!allService) {
+            return next(new AppError("Service not Found", 400));
         }
 
-        res.status(200).json({
-            success:true,
-            message:"Service Data are:-",
-            data:allService
-        })
+        // Rearrange the services based on the desired sequence
+        const orderedServices = [];
+        const remainingServices = [];
 
-    }catch(error){
-        return next(new AppError(error.message,500))
+        // Separate services into desired order and remaining ones
+        desiredSequence.forEach(serviceName => {
+            const matchedService = allService.find(service => service.serviceName === serviceName);
+            if (matchedService) {
+                orderedServices.push(matchedService);
+            }
+        });
+
+        // Add the rest of the services that were not in the desired sequence
+        allService.forEach(service => {
+            if (!desiredSequence.includes(service.serviceName)) {
+                remainingServices.push(service);
+            }
+        });
+
+        // Combine the ordered services and remaining services
+        const finalServiceOrder = [...orderedServices, ...remainingServices];
+
+        res.status(200).json({
+            success: true,
+            message: "Service Data are:-",
+            data: finalServiceOrder,
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
-} 
+};
+
+
 
 
 const updateService=async(req,res,next)=>{
@@ -218,16 +249,17 @@ const getServiceDetail=async(req,res,next)=>{
 const updateServiceDetail = async (req, res, next) => {
     try {
       const { serviceDetailId } = req.params; // Extract service detail ID from params
-      const { serviceDetailName, serviceDetail } = req.body; // Extract fields to update
-
-
-     
+      console.log(serviceDetailId)
       
-  
+      const { serviceDetailName, serviceDetail } = req.body; // Extract fields to update
       // Check if the serviceDetailId is valid
+      const all=await ServiceDetailModel.find({})
+    //   console.log(all);
+      
+
       const existingServiceDetail = await ServiceDetailModel.findById(serviceDetailId);
       if (!existingServiceDetail) {
-        return next(new AppError("Service Detail not found", 404));
+        return next(new AppError("Service Detail not found", 402));
       }
   
       // Update fields only if provided in the request
@@ -237,9 +269,9 @@ const updateServiceDetail = async (req, res, next) => {
       // Handle file upload if a new image is provided
       if (req.file) {
         // Delete the old image from Cloudinary (if it exists)
-        if (existingServiceDetail.servicePhoto.public_id) {
-          await cloudinary.v2.uploader.destroy(existingServiceDetail.servicePhoto.public_id);
-        }
+        // if (existingServiceDetail.servicePhoto.public_id) {
+        //   await cloudinary.v2.uploader.destroy(existingServiceDetail.servicePhoto.public_id);
+        // }
   
         // Upload the new image to Cloudinary
         const result = await cloudinary.v2.uploader.upload(req.file.path, {
@@ -253,7 +285,7 @@ const updateServiceDetail = async (req, res, next) => {
         };
   
         // Remove the uploaded file from the server
-        fs.rmSync(`uploads/${req.file.filename}`);
+        // fs.rmSync(`uploads/${req.file.filename}`);
       }
   
       // Save the updated document to the database

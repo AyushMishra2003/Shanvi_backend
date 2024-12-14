@@ -57,25 +57,68 @@ const addTest=async(req,res,next)=>{
     }
 }
 
-const getTest=async(req,res,next)=>{
-    try{
-        
-        const allTest=await  TestModel.find({}).populate('testDetail')
+const getTest = async (req, res, next) => {
+    try {
+        // Fetch all tests from the database
+        const allTest = await TestModel.find({}).populate('testDetail');
 
-        if(!allTest){
-            return next(new AppError("Test not Found",400))
+        if (!allTest) {
+            return next(new AppError("Test not Found", 400));
         }
 
-        res.status(200).json({
-            success:true,
-            message:"All Test",
-            data:allTest
-        })
+        console.log(allTest);
         
-    }catch(error){
-        return next(new AppError(error.message,500))
+
+        // Define the desired sequence of test names
+        const desiredSequence = [
+            "Digital PET-CT Scan",
+            "Digital Gamma Camera" ,
+            "NUCLEAR MEDICINE",
+            "Theranostics",
+            "Digital 3.0 Tesla MRI(48 Channel)",
+            "128 Slice CT Scan",
+            "UltraSound (3D/4D/Dopplers/TIFFA)",
+            "Pathology Test",
+            "Cardio Imaging",
+            "Neuro Imaging",
+            "Digital X-Ray",
+            "Digital Mammography",
+            "DEXA Scan"
+        ];
+
+        // Sort tests based on the desired sequence
+        const orderedTests = [];
+        const remainingTests = [];
+
+        allTest.forEach(test => {
+            const index = desiredSequence.indexOf(test.testName);
+            // console.log(index);
+            
+            if (index !== -1) {
+                orderedTests[index] = test; // Place test in the correct position
+            } else {
+                remainingTests.push(test); // Add test to remaining tests if not in sequence
+            }
+        });
+
+        
+
+        // Remove any undefined slots (in case of missing items from the sequence)
+        const finalOrderedTests = orderedTests.filter(Boolean).concat(remainingTests);
+
+        res.status(200).json({
+            success: true,
+            message: "All Test",
+            data: finalOrderedTests
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
     }
-}
+};
+
+
+
+
 
 const updateTest = async (req, res, next) => {
     try {
