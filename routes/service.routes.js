@@ -7,9 +7,9 @@ const ServiceRouter=Router()
 
 
 
-ServiceRouter.post("/",addService)
+ServiceRouter.post("/",upload.single("servicePhoto"),addService)
 ServiceRouter.get("/",getService)
-ServiceRouter.put("/:serviceId",updateService)
+ServiceRouter.put("/:serviceId",upload.single("servicePhoto"),updateService)
 ServiceRouter.delete("/:serviceId",deleteService)
 ServiceRouter.post("/detail/:serviceId",upload.single("servicePhoto"),addServiceDetail)
 ServiceRouter.put("/detail/:serviceDetailId",upload.single("servicePhoto"),updateServiceDetail)

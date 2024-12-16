@@ -14,12 +14,30 @@ const addService=async(req,res,next)=>{
         }
 
         const addService=await ServiceModel({
-            serviceName
+            serviceName,
+            servicePhoto:{
+                public_id:"",
+                secure_url:""
+            }
         })
 
         if(!addService){
             return next(new AppError("Service not Found",400))
         }
+
+            if (req.file) {
+                    const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                      folder: "lms",
+                    });
+        
+                    console.log(result);
+                    
+                    if (result) {
+                      (addService.servicePhoto.public_id = result.public_id),
+                        (addService.servicePhoto.secure_url = result.secure_url);
+                    }
+                    fs.rm(`uploads/${req.file.filename}`);
+         }
 
 
         await addService.save()
@@ -34,7 +52,7 @@ const addService=async(req,res,next)=>{
         return next(new AppError(error.message,500))
     }
 }
-
+  
 
 const getService = async (req, res, next) => {
     try {
@@ -92,6 +110,8 @@ const updateService=async(req,res,next)=>{
     try{
         
         const {serviceName}=req.body
+
+      
         const {serviceId}=req.params
 
         const validService=await ServiceModel.findById(serviceId)
@@ -100,7 +120,37 @@ const updateService=async(req,res,next)=>{
             return next(new AppError("Service is Not Found",404))
         }
 
-        validService.serviceName=serviceName
+        console.log(validService);
+        
+        if(serviceName){
+            validService.serviceName=serviceName
+        }
+
+        console.log(req.file);
+        
+     
+
+            if (req.file) {
+                    // Delete the old photo from Cloudinary if it exists
+                    // if (test.testPhoto.public_id) {
+                    //     await cloudinary.v2.uploader.destroy(test.testPhoto.public_id);
+                    // }
+        
+                    // Upload the new photo to Cloudinary
+                    console.log("helli i am coming");
+                    
+                    const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                        folder: "lms",
+                    });
+        
+                    if (result) {
+                          validService.servicePhoto.public_id = result.public_id;
+                          validService.servicePhoto.secure_url = result.secure_url;
+                    }
+        
+                    // Delete the uploaded file from local storage
+                    fs.rm(`uploads/${req.file.filename}`);
+                }
 
         await validService.save()
 
@@ -112,6 +162,8 @@ const updateService=async(req,res,next)=>{
 
 
     }catch(error){
+        console.log(error);
+        
         return next(new AppError(error.message,500))
     }
 }

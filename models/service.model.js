@@ -6,6 +6,16 @@ const serviceSchema=new Schema(
         serviceName:{
             type:String
         },
+        servicePhoto:{
+            public_id: {
+                type: String,
+                default: '',
+              },
+              secure_url: {
+                type: String,
+                default: '',
+              },
+        },
         serviceDetails: [
             {
               type: Schema.Types.ObjectId,
