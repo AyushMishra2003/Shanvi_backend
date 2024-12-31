@@ -8,9 +8,9 @@ import TestDetailModel from "../models/TestDetail.model.js";
 const addTest=async(req,res,next)=>{
     try{
 
-        const {testName}=req.body
+        const {testName,refServiceName}=req.body
 
-        console.log(testName);
+
         
 
         if(!testName){
@@ -23,6 +23,7 @@ const addTest=async(req,res,next)=>{
                 public_id:"",
                 secure_url:""
             },
+            refServiceName
         })
 
         if(!addTest){
@@ -60,13 +61,16 @@ const addTest=async(req,res,next)=>{
 const getTest = async (req, res, next) => {
     try {
         // Fetch all tests from the database
+
+        console.log("mai aaya hu");
+        
         const allTest = await TestModel.find({}).populate('testDetail');
 
         if (!allTest) {
             return next(new AppError("Test not Found", 400));
         }
 
-        console.log(allTest);
+
         
 
         // Define the desired sequence of test names
@@ -85,6 +89,10 @@ const getTest = async (req, res, next) => {
             "Digital Mammography",
             "DEXA Scan"
         ];
+
+
+
+   
 
         // Sort tests based on the desired sequence
         const orderedTests = [];
@@ -106,6 +114,8 @@ const getTest = async (req, res, next) => {
         // Remove any undefined slots (in case of missing items from the sequence)
         const finalOrderedTests = orderedTests.filter(Boolean).concat(remainingTests);
 
+        
+
         res.status(200).json({
             success: true,
             message: "All Test",
@@ -116,14 +126,10 @@ const getTest = async (req, res, next) => {
     }
 };
 
-
-
-
-
 const updateTest = async (req, res, next) => {
     try {
         const { testId } = req.params; // Extract testId from URL parameters
-        const { testName } = req.body; // Extract new test name from request body
+        const { testName ,refServiceName} = req.body; // Extract new test name from request body
 
         if (!testName) {
             return next(new AppError("Test name is required", 400));
@@ -138,6 +144,10 @@ const updateTest = async (req, res, next) => {
 
         // Update test name
         test.testName = testName;
+
+        if(refServiceName){
+            test.refServiceName=refServiceName
+        }
 
         // Check if a new file is uploaded for the test photo
         if (req.file) {
@@ -173,7 +183,6 @@ const updateTest = async (req, res, next) => {
         return next(new AppError(error.message, 500));
     }
 };
-
 
 const deleteTest = async (req, res, next) => {
     try {
@@ -213,16 +222,18 @@ const deleteTest = async (req, res, next) => {
 };
 
 
-
-
 const addTestDetails=async(req,res,next)=>{
     try{ 
 
         const {testId}=req.params
 
-        const {testDetailName,category,testPrice,testDetails1,testDetails2,testDiscount,testRequirement2, testRequirement1,testDeliver1,testDeliver2}=req.body
+        const {testDetailName,category,testPrice,testDetails1,testDetails2,testDiscount,testRequirement2, testRequirement1,testDeliver1,testDeliver2,refService}=req.body
 
-        console.log(req.body);
+        console.log(testDetails1);
+        console.log(testDetails2);
+        console.log(testRequirement1);
+        
+        
         
 
         // if(!testDetailName || !category || !testPrice || !testDetails1 || !testDetails2 || !testDiscount || !testRequirement1 || !testRequirement2 || !testDeliver1 || !testDeliver2){
@@ -247,15 +258,17 @@ const addTestDetails=async(req,res,next)=>{
             testDeliver1,
             testDeliver2,
             testId,
+            refService
         })
+        
            
-        console.log(validTest);
+  
         
 
         await validTest.testDetail.push(addTestDetail._id);
         await validTest.save();  
         
-        console.log(validTest);
+   
         
        await addTestDetail.save()
 
@@ -322,8 +335,12 @@ const updateTestDetails = async (req, res, next) => {
         //     }
         // }
 
+
         testDetail.testDetailName=updateData?.testDetailName
         testDetail.testPrice=updateData?.testPrice
+        testDetail.testDetails1=updateData?.testDetails1
+        testDetail.testDetails2=updateData?.testDetails2
+        testDetail.testRequirement1=updateData?.testRequirement1
 
         console.log(testDetail);
         

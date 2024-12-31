@@ -17,6 +17,9 @@ const TestSchema=new Schema(
               default: '',
             },
         },
+        refServiceName:{
+          type:String
+        },
         testDetail: [
             {
               type: Schema.Types.ObjectId,

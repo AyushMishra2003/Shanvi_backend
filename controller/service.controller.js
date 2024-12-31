@@ -7,7 +7,7 @@ import fs from "fs/promises";
 const addService=async(req,res,next)=>{
     try{
 
-        const {serviceName}=req.body
+        const {serviceName                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  }=req.body
 
         if(!serviceName){
             return next(new AppError("Service Name is Required",400))
@@ -102,6 +102,141 @@ const getService = async (req, res, next) => {
         return next(new AppError(error.message, 500));
     }
 };
+
+const getDigitalService = async (req, res, next) => {
+    try {
+        const allService = await ServiceModel.find({}).populate('serviceDetails');
+
+        const desiredSequence = [
+            "Nuclear Medicine",
+            "Radiology",
+            "Fetal Medicine",
+            "Pathology",
+            "Cardiology",
+            "Neurology",
+        ];
+
+        if (!allService) {
+            return next(new AppError("Service not Found", 400));
+        }
+
+        // Rearrange the services based on the desired sequence
+        const orderedServices = [];
+        const remainingServices = [];
+        const digitalServices = [];
+
+        // Separate services into desired order, remaining ones, and those starting with "Digital"
+        desiredSequence.forEach(serviceName => {
+            const matchedService = allService.find(service => service.serviceName === serviceName);
+            if (matchedService) {
+                orderedServices.push(matchedService);
+            }
+        });
+
+        allService.forEach(service => {
+            if (!desiredSequence.includes(service.serviceName)) {
+                if (service.serviceName.startsWith("Digital")) {
+                    console.log("aaya ",service);
+                    
+                    digitalServices.push(service);
+                } else {
+                    remainingServices.push(service);
+                }
+            }
+        });
+
+        // Combine the ordered services, digital services, and remaining services
+        const finalServiceOrder = [...orderedServices, ...digitalServices, ...remainingServices];
+
+        res.status(200).json({
+            success: true,
+            message: "Digital Service Data are:-",
+            data: finalServiceOrder,
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+
+
+const getServiceMoreDetail = async (req, res, next) => {
+    try {
+        // Fetch all services and populate serviceDetails
+        const allServices = await ServiceModel.find({}).populate('serviceDetails');
+
+        console.log(allServices);
+
+        const desiredSequence = [
+            "Nuclear Medicine",
+            "Radiology",
+            "Fetal Medicine",
+            "Pathology",
+            "Cardiology",
+            "Neurology",
+        ];
+
+        if (!allServices || allServices.length === 0) {
+            return next(new AppError("No services found", 400));
+        }
+
+        // Rearrange services based on the desired sequence
+        const orderedServices = [];
+        const remainingServices = [];
+
+        // Sort services into desired sequence and others
+        desiredSequence.forEach(serviceName => {
+            const matchedService = allServices.find(service => service.serviceName === serviceName);
+            if (matchedService) {
+                orderedServices.push(matchedService);
+            }
+        });
+
+        allServices.forEach(service => {
+            if (!desiredSequence.includes(service.serviceName)) {
+                remainingServices.push(service);
+            }
+        });
+
+        // Combine ordered and remaining services
+        const finalServiceOrder = [...orderedServices, ...remainingServices];
+
+        // Consolidate all serviceDetails into a single array
+        const allServiceDetails = finalServiceOrder.reduce((acc, service) => {
+            if (service.serviceDetails && Array.isArray(service.serviceDetails)) {
+                acc.push(...service.serviceDetails); // Merge all service details into a single array
+            }
+            return acc;
+        }, []);
+
+        /*
+          1- Digital PET CT
+          4- Theranostics
+          6- Digital X-Ray
+          2- PET-CT Guided Interventions
+          3- Digital Gamma Camera
+          5- Digital 3.0 Tesla 49 Channel MRI
+
+        */
+
+        // Send the response
+        res.status(200).json({
+            success: true,
+            message: "Service details consolidated successfully.",
+            data: allServiceDetails, // Return the consolidated array
+        });
+    } catch (error) {
+        // Handle unexpected errors
+        console.error("Error fetching services:", error);
+        return next(new AppError("Internal Server Error", 500));
+    }
+};
+
+
+
+
+
+
 
 
 
@@ -434,5 +569,7 @@ export {
     getServiceDetail,
     updateServiceDetail,
     deleteServiceDetail,
-    getSpecificDetail
+    getSpecificDetail,
+    getDigitalService,
+    getServiceMoreDetail
 }

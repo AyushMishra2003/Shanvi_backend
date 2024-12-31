@@ -9,6 +9,7 @@ const serviceDetailSchema=new Schema(
          serviceDetail:{
             type:String
          },
+         
          servicePhoto: {
             public_id: {
               type: String,

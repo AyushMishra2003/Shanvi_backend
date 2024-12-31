@@ -6,9 +6,9 @@ import fs from "fs/promises";
 
 const addDoctor=async(req,res,next)=>{
   try{
-    const {doctorName, doctorDesination}=req.body
+    const {doctorName, doctorDesination,refService}=req.body
 
-    if(!doctorName || !doctorDesination){
+    if(!doctorName || !doctorDesination || !refService){
         return next(new AppError("All field are Required",400))
     }
 
@@ -19,6 +19,7 @@ const addDoctor=async(req,res,next)=>{
             public_id:"",
             secure_url:""
         },
+        refService
     })
 
     if(!addDoctor){
@@ -87,11 +88,11 @@ const getDoctor = async (req, res, next) => {
 const editDoctor = async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { doctorName, doctorDesination } = req.body;
+      const { doctorName, doctorDesination,refService } = req.body;
   
-      if (!doctorName && !doctorDesination && !req.file) {
-        return next(new AppError("No fields provided for update", 400));
-      }
+      // if (!doctorName && !doctorDesination && !req.file) {
+      //   return next(new AppError("No fields provided for update", 400));
+      // }
   
       const doctor = await DoctorModel.findById(id);
   
@@ -101,6 +102,10 @@ const editDoctor = async (req, res, next) => {
   
       if (doctorName) doctor.doctorName = doctorName;
       if (doctorDesination) doctor.doctorDesination = doctorDesination;
+
+      if(refService){
+         doctor.refService=refService
+      }
   
       if (req.file) {
         const result = await cloudinary.v2.uploader.upload(req.file.path, {

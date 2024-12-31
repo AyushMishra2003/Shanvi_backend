@@ -16,6 +16,7 @@ const serviceSchema=new Schema(
                 default: '',
               },
         },
+
         serviceDetails: [
             {
               type: Schema.Types.ObjectId,

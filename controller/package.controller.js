@@ -33,27 +33,40 @@ const addPackage=async(req,res,next)=>{
 
 }
 
-const getPackage=async(req,res,next)=>{
-    try {
-        // Fetch all packages and populate the packageDetails
-        const allPackages = await PackageModel.find({})
-        .populate({
-          path: 'packageDetails', // The field to populate
-          model: 'PackageDetail', // Referencing the PackageDetail model
-        });
-    
+const getPackage = async (req, res, next) => {
+  try {
+    // Replace 'Health Checkup Package' with your desired package name
+    const specificPackageName = "Health Checkup Package";
 
+    // Fetch only the package with the specific name
+    const specificPackage = await PackageModel.findOne({ packageName: specificPackageName })
+      .populate({
+        path: 'packageDetails', // The field to populate
+        model: 'PackageDetail', // Referencing the PackageDetail model
+      });
 
-        res.status(200).json({
-            success:true,
-            message:"All Package are",
-            data:allPackages
-        })
-        // return or send as response
-      } catch (error) {
-        console.error('Error fetching packages:', error);
-      }
-}
+    if (!specificPackage) {
+      return res.status(404).json({
+        success: false,
+        message: "Package not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Package found",
+      data: specificPackage.packageDetails,
+    });
+  } catch (error) {
+    console.error('Error fetching package:', error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 
 const updatePackage=async(req,res,next)=>{
     try{
@@ -66,7 +79,8 @@ const updatePackage=async(req,res,next)=>{
         if(!validPackage){
             return next(new AppError("Package not Found",400))
         }
-
+          
+         
         validPackage.packageName=packageName
 
         await validPackage.save()
@@ -239,7 +253,10 @@ const getPackageDetails=async(req,res,next)=>{
 const updatePackageDetails = async (req, res, next) => {
     try {
       const { packageDetailId } = req.params;
-      const { packageCategory, packageRate, packageDiscount, parameterInclude, report, packagesParameter,packageOverview } = req.body;
+      const { packageName, packageCategory, packageRate, packageDiscount, parameterInclude, report, packagesParameter,packageOverview } = req.body;
+
+
+      
   
       // Step 1: Find the existing PackageDetail by ID
       const existingPackageDetail = await PackageDetail.findById(packageDetailId);
@@ -248,6 +265,8 @@ const updatePackageDetails = async (req, res, next) => {
       }
   
       // Step 2: Update the fields (if they are provided in the request)
+     
+      if(packageName)  existingPackageDetail.packageName=packageName;
       if (packageCategory) existingPackageDetail.packageCategory = packageCategory;
       if (packageRate) existingPackageDetail.packageRate = packageRate;
       if (packageDiscount) existingPackageDetail.packageDiscount = packageDiscount;

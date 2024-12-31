@@ -18,6 +18,9 @@ const doctorSchema=new Schema(
       },
       doctorDesination:{
         type:String
+      },
+      refService:{
+        type:String
       }
     },
     {

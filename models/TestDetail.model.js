@@ -12,11 +12,14 @@ const TestDetailSchema=new Schema(
          testPrice:{
             type:Number
          },
-         testDetail1:{
+         testDetails1:{
             type:String
          },
          testDetails2:{
             type:String
+         },
+         refService:{
+            type:String,
          },
          testDiscount:{
             type:Number

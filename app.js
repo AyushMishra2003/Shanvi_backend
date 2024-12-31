@@ -12,6 +12,7 @@ import doctorRoute from "./routes/doctor.route.js";
 import PayementRouter from "./routes/payment.route.js";
 import blogRoute from "./routes/blog.route.js";
 import sendMail from "./controller/message.controller.js";
+import orderRoute from "./routes/order.route.js";
 
 
 config();
@@ -52,12 +53,8 @@ app.use("/api/v1/test",testRouter)
 app.use("/api/v1/doctor",doctorRoute)
 app.use("/api/v1/payment",PayementRouter)
 app.use("/api/v1/blog",blogRoute)
-
 app.post("/api/v1/email",sendMail)
-
-
-
-
+app.use("/api/v1/order",orderRoute)
 
 app.get("/test", (req, res) => {
   res.status(200).json({
