@@ -1,3 +1,4 @@
+import { log } from "console";
 import PackageModel from "../models/package.model.js"
 import PackageDetail from "../models/packageDetails.model.js";
 import AppError from "../utils/error.utlis.js"
@@ -51,6 +52,8 @@ const getPackage = async (req, res, next) => {
         message: "Package not found",
       });
     }
+
+    console.log(specificPackage);
 
     res.status(200).json({
       success: true,
@@ -130,19 +133,25 @@ const deletePackage=async(req,res,next)=>{
 const addPackageDetails=async(req,res,next)=>{
     try{
        
-        const {packageCategory,packageRate,packageDiscount,parameterInclude,report,parameters,packageName,packageOverview}=req.body
-
-        console.log("req body is ",req.body);
-        
+        const {packageCategory,packageRate,packageDiscount,parameterInclude,report,parameters,packageName,packageOverview,packageParamterDetails}=req.body
 
         const {packageId}=req.params
 
+        const specificPackageName = "Health Checkup Package";
 
-        const validPackages=await PackageModel.findById(packageId)
+        // Fetch only the package with the specific name
+        const validPackages = await PackageModel.findOne({ packageName: specificPackageName })
+          .populate({
+            path: 'packageDetails', // The field to populate
+            model: 'PackageDetail', // Referencing the PackageDetail model
+          });
 
-        if(!validPackages){
-            return next(new AppError("Packages not Found",400))
-        }
+
+        // const validPackages=await PackageModel.findById(packageId)
+
+        // if(!validPackages){
+        //     return next(new AppError("Packages not Found",400))
+        // }
 
         // const formattedPackages = Array.isArray(packagesParameter)
         // ? packagesParameter.map((item) => ({
@@ -169,7 +178,8 @@ const addPackageDetails=async(req,res,next)=>{
             },
             packageName,
             packageOverview,
-              packageId, // Link to Package
+            packageId, // Link to Package,
+            packageParamterDetails
         })
 
         console.log(addPackageDetail);
@@ -191,7 +201,7 @@ const addPackageDetails=async(req,res,next)=>{
 
 
         await validPackages.packageDetails.push(addPackageDetail._id);
-         await validPackages.save();
+        await validPackages.save();
 
           
 
@@ -208,6 +218,8 @@ const addPackageDetails=async(req,res,next)=>{
 
 
     }catch(error){
+      console.log(error);
+      
         return next(new AppError(error.message,500))
     }
 }

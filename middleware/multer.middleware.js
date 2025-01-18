@@ -11,10 +11,10 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp','.avif']; // Accept more types like webp
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp','.avif','.pdf','.xlsx', '.xls']; // Accept more types like webp
   const ext = path.extname(file.originalname).toLowerCase();
   if (!allowedExtensions.includes(ext)) {
-    return cb(new Error('Only images are allowed (.jpg, .jpeg, .png, .webp)'), false);
+    return cb(new Error('Only images are allowed (.jpg, .jpeg, .png, .webp,.pdf,.xlsx, .xls)'), false);
   }
   cb(null, true);
 };

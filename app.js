@@ -13,6 +13,9 @@ import PayementRouter from "./routes/payment.route.js";
 import blogRoute from "./routes/blog.route.js";
 import sendMail from "./controller/message.controller.js";
 import orderRoute from "./routes/order.route.js";
+import cvRouter from "./routes/carrer.routes.js";
+import contactRoute from "./routes/contact.routes.js";
+import galleryRoute from "./routes/gallery.route.js";
 
 
 config();
@@ -55,6 +58,10 @@ app.use("/api/v1/payment",PayementRouter)
 app.use("/api/v1/blog",blogRoute)
 app.post("/api/v1/email",sendMail)
 app.use("/api/v1/order",orderRoute)
+app.use("/api/v1/carrer",cvRouter)
+app.use("/api/v1/contact",contactRoute)
+app.use("/api/v1/gallery",galleryRoute)
+
 
 app.get("/test", (req, res) => {
   res.status(200).json({

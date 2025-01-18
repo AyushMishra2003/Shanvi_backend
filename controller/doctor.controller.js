@@ -8,7 +8,7 @@ const addDoctor=async(req,res,next)=>{
   try{
     const {doctorName, doctorDesination,refService}=req.body
 
-    if(!doctorName || !doctorDesination || !refService){
+    if(!doctorName || !doctorDesination ){
         return next(new AppError("All field are Required",400))
     }
 
@@ -161,11 +161,34 @@ const editDoctor = async (req, res, next) => {
       return next(new AppError(error.message, 500));
     }
   };
+
+  const deleteAllDoctors = async (req, res, next) => {
+    try {
+        // Fetch all doctor documents
+        const doctors = await DoctorModel.find();
+
+        if (!doctors || doctors.length === 0) {
+            return next(new AppError("No doctors found", 400));
+        }
+
+        // Delete all doctor documents from the database
+        await DoctorModel.deleteMany();
+
+        res.status(200).json({
+            success: true,
+            message: "All doctors have been deleted successfully.",
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
   
 
 export {
     addDoctor,
     getDoctor,
     editDoctor,
-    deleteDoctor
+    deleteDoctor,
+    deleteAllDoctors
 }

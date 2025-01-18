@@ -455,11 +455,6 @@ const updateServiceDetail = async (req, res, next) => {
   
       // Handle file upload if a new image is provided
       if (req.file) {
-        // Delete the old image from Cloudinary (if it exists)
-        // if (existingServiceDetail.servicePhoto.public_id) {
-        //   await cloudinary.v2.uploader.destroy(existingServiceDetail.servicePhoto.public_id);
-        // }
-  
         // Upload the new image to Cloudinary
         const result = await cloudinary.v2.uploader.upload(req.file.path, {
           folder: "lms",

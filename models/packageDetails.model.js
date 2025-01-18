@@ -39,11 +39,14 @@ const packageDetailsSchema = new Schema(
         description: { type: String },
       },
     ],
-    packageId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Package', 
-      required: true,
-    },
+    // packageId: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'Package', 
+    //   required: true,
+    // },
+    packageParamterDetails:{
+      type:String
+    }
   },
   {
     timestamps: true,

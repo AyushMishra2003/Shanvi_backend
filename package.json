@@ -26,7 +26,8 @@
     "passport-facebook": "^3.0.0",
     "pdfkit": "^0.15.1",
     "razorpay": "^2.9.5",
-    "uninstall": "^0.0.0"
+    "uninstall": "^0.0.0",
+    "xlsx": "^0.18.5"
   },
   "name": "backend",
   "version": "1.0.0",
