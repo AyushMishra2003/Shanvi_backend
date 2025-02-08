@@ -1,5 +1,5 @@
-import ServiceModel from "../models/service.model.js"
-import ServiceDetailModel from "../models/servicedetails.model.js";
+import {ServiceModel} from "../models/service.model.js"
+import {ServiceDetailModel} from "../models/servicedetails.model.js";
 import AppError from "../utils/error.utlis.js"
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
@@ -231,15 +231,6 @@ const getServiceMoreDetail = async (req, res, next) => {
         return next(new AppError("Internal Server Error", 500));
     }
 };
-
-
-
-
-
-
-
-
-
 
 const updateService=async(req,res,next)=>{
     try{
@@ -526,16 +517,15 @@ const deleteServiceDetail = async (req, res, next) => {
 const getSpecificDetail=async(req,res,next)=>{
     try{
 
-        const {id}=req.params
-
-        console.log("id is",id);
-        
-        
-        const service=await ServiceDetailModel.findById(id)
+        const {slug}=req.params
+        const service=await ServiceDetailModel.findOne({slug})
 
         if(!service){
             return next(new AppError("Service not Found",404))
         }
+
+        console.log(service);
+        
 
         res.status(200).json({
             success:true,

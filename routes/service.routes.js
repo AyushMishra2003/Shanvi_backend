@@ -16,7 +16,7 @@ ServiceRouter.delete("/:serviceId",deleteService)
 ServiceRouter.post("/detail/:serviceId",upload.single("servicePhoto"),addServiceDetail)
 ServiceRouter.put("/detail/:serviceDetailId",upload.single("servicePhoto"),updateServiceDetail)
 ServiceRouter.get("/detail/:serviceId",getServiceDetail)
-ServiceRouter.get("/detail/specific/:id",getSpecificDetail)
+ServiceRouter.get("/detail/specific/:slug",getSpecificDetail)
 ServiceRouter.delete("/detail/:serviceDetailId",deleteServiceDetail)
 
 

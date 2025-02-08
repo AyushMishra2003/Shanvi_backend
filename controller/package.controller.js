@@ -53,7 +53,7 @@ const getPackage = async (req, res, next) => {
       });
     }
 
-    console.log(specificPackage);
+ 
 
     res.status(200).json({
       success: true,

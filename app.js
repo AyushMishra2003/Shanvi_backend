@@ -16,9 +16,17 @@ import orderRoute from "./routes/order.route.js";
 import cvRouter from "./routes/carrer.routes.js";
 import contactRoute from "./routes/contact.routes.js";
 import galleryRoute from "./routes/gallery.route.js";
+import pathologyRouter from "./routes/pathology.route.js";
+import { ServiceModel, updateSlugs } from "./models/service.model.js";
+import { updateService } from "./controller/service.controller.js";
+import { ServiceDetailModel, updateServiceDetailSlugs } from "./models/servicedetails.model.js";
 
 
 config();
+
+// updateSlugs(ServiceModel);
+// updateServiceDetailSlugs(ServiceDetailModel)
+
 
 // Initialize Express app
 const app = express();
@@ -61,6 +69,7 @@ app.use("/api/v1/order",orderRoute)
 app.use("/api/v1/carrer",cvRouter)
 app.use("/api/v1/contact",contactRoute)
 app.use("/api/v1/gallery",galleryRoute)
+app.use("/api/v1/pathology",pathologyRouter)
 
 
 app.get("/test", (req, res) => {

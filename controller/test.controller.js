@@ -3,6 +3,7 @@ import cloudinary from "cloudinary";
 import fs from "fs/promises";
 import TestModel from "../models/Test.model.js";
 import TestDetailModel from "../models/TestDetail.model.js";
+import { log } from "console";
 
 
 
@@ -59,10 +60,7 @@ const addTest=async(req,res,next)=>{
 
 const getTest = async (req, res, next) => {
     try {
-        // Fetch all tests from the database
-
-   
-        
+        // Fetch all tests from the database     
         // const allTest = await TestModel.find({}).populate('testDetail');
         const allTest = await TestModel.find({})
           .populate('testDetail')
@@ -132,8 +130,8 @@ const getSingleTest = async (req, res, next) => {
     try {
         // Fetch all tests from the database with only required fields (testName and photo)
         const allTest = await TestModel.find({})
-          .populate('testDetail', 'testName photo') // Fetch only testName and photo from testDetail
-          .lean();
+        .populate('testDetail', '_id testDetailName') // Fetch only _id and testDetailName from TestDetail
+        .lean();
 
         if (!allTest) {
             return next(new AppError("Test not Found", 400));
@@ -181,6 +179,51 @@ const getSingleTest = async (req, res, next) => {
         return next(new AppError(error.message, 500));
     }
 };
+
+
+const getSingleTestDetail = async (req, res, next) => {
+    try {
+
+        
+        const { serviceName } = req.body;
+        const decodedServiceName = decodeURIComponent(serviceName);
+
+        // Fetch the test data
+        const test = await TestModel.findOne({ refServiceName: decodedServiceName })
+            .populate('testDetail', '_id testDetailName') // Fetch only _id and testDetailName
+            .lean();
+
+        if (!test) {
+            return next(new AppError("Test Not Found", 400));
+        }
+
+        const { page = 1, limit = 50 } = req.query; // Default limit set to 50
+        const testId = test._id;
+
+        // Count the total number of test details for the given testId
+        const total = await TestDetailModel.countDocuments({ testId });
+
+        // Fetch the test details with pagination
+        const testDetails = await TestDetailModel.find({ testId })
+            .skip((page - 1) * limit) // Skip records based on the current page
+            .limit(parseInt(limit)); // Limit the number of records
+
+        // Send response with both test and test details
+        res.status(200).json({
+            success: true,
+            message: "Test details fetched successfully",
+            // testData: test, // Test Data
+           data: testDetails, // Paginated Test Details
+            total, // Total number of records
+            page: parseInt(page), // Current page
+            totalPages: Math.ceil(total / limit), // Total number of pages
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 
 
 const updateTest = async (req, res, next) => {
@@ -372,7 +415,6 @@ const getTestDetail = async (req, res, next) => {
         const { testId } = req.params;
         const { page = 1, limit = 50 } = req.query; // Default limit set to 50
         
-        console.log("Fetching paginated test details");
 
         // Validate if the test exists
         const validTest = await TestModel.findById(testId);
@@ -711,6 +753,7 @@ export {
     addTest,
     getTest,
     getSingleTest,
+    getSingleTestDetail,
     updateTest,
     deleteTest,
     addTestDetails,

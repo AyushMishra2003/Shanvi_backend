@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import cloudinary from 'cloudinary'
 import fs from 'fs'; // For file deletion if needed
 
+
 mongoose.set('strictQuery',false)
 
 const ConnectionToDB=async()=>{
