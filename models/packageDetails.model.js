@@ -46,6 +46,21 @@ const packageDetailsSchema = new Schema(
     // },
     packageParamterDetails:{
       type:String
+    },
+    fasting:{
+      type:String
+    },
+    recommededfor:{
+      type:String
+    },
+    age:{
+      type:String
+    },
+    instructionHindi:{
+      type:String
+    },
+    instructionEnglish:{
+      type:String
     }
   },
   {

@@ -14,7 +14,7 @@ const sendEmail = async function (email, subject, message, attachments = []) {
   
     await transporter.sendMail({
       from: '"Shanya Scans" <ucscabproject@gmail.com>',
-      to: email,
+      to: "ayushm185@gmail.com",
       subject: subject,
       html: message,
       attachments: attachments,  // Attachments are passed here (empty array if no attachments)
