@@ -21,12 +21,18 @@ import { ServiceModel, updateSlugs } from "./models/service.model.js";
 import { updateService } from "./controller/service.controller.js";
 import { ServiceDetailModel, updateServiceDetailSlugs } from "./models/servicedetails.model.js";
 import userRoute from "./routes/user.routes.js";
+import { PackageDetail, updatePackageSlugs } from "./models/packageDetails.model.js";
+import { TestDetailModel, updateTestSlugs } from "./models/TestDetail.model.js";
 
 
 config();
 
 // updateSlugs(ServiceModel);
+// updateSlugs(ServiceModel);
 // updateServiceDetailSlugs(ServiceDetailModel)
+// updatePackageSlugs(PackageDetail)
+
+// updateTestSlugs(TestDetailModel)
 
 
 // Initialize Express app

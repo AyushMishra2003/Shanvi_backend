@@ -27,7 +27,7 @@ const serviceSchema = new Schema(
     slug: {
       type: String,
       unique: true,
-      required: true, // ✅ Required slug hona chahiye
+      // required: true, // ✅ Required slug hona chahiye
     },
   },
   {

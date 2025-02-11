@@ -518,7 +518,12 @@ const getSpecificDetail=async(req,res,next)=>{
     try{
 
         const {slug}=req.params
+        console.log(slug);
+        
         const service=await ServiceDetailModel.findOne({slug})
+
+        console.log(service);
+        
 
         if(!service){
             return next(new AppError("Service not Found",404))
