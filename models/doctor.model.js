@@ -21,6 +21,15 @@ const doctorSchema=new Schema(
       },
       refService:{
         type:String
+      },
+      degree:{
+        type:String
+      },
+      experience:{
+        type:String
+      },
+      isDoctor:{
+        type:Boolean
       }
     },
     {

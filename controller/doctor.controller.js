@@ -6,7 +6,7 @@ import fs from "fs/promises";
 
 const addDoctor=async(req,res,next)=>{
   try{
-    const {doctorName, doctorDesination,refService}=req.body
+    const {doctorName, doctorDesination,refService,experience,degree}=req.body
 
     if(!doctorName || !doctorDesination ){
         return next(new AppError("All field are Required",400))
@@ -19,7 +19,10 @@ const addDoctor=async(req,res,next)=>{
             public_id:"",
             secure_url:""
         },
-        refService
+        experience,
+        degree,
+        refService,
+        isDoctor:true
     })
 
     if(!addDoctor){
