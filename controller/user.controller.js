@@ -54,7 +54,14 @@ export const register = async (req, res) => {
     // Send verification email
     await sendEmail(email, 'Verify Your Account', `Your verification code is: ${verificationCode}`);
 
-    res.status(201).json({ message: 'User registered. Check email for verification code.' });
+    // res.status(201).json({ message: 'User registered. Check email for verification code.' });
+    
+    res.status(201).json({
+      success:true,
+      message:"User Registered,Check email for verificicaion code"
+    })
+
+
   } catch (error) {
     console.log(error);
     
