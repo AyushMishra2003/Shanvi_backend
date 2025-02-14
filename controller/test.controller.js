@@ -5,6 +5,7 @@ import slugify from "slugify";
 import xlsx from "xlsx";
 import TestModel from "../models/Test.model.js";
 import { TestDetailModel } from "../models/TestDetail.model.js";
+import PathologyDetail from "../models/pathology.model.js";
 
 
 
@@ -566,17 +567,183 @@ const getTestSpecificDetail = async (req, res, next) => {
 }
 
 
+// const uploadExcelForTestDetails = async (req, res, next) => {
+//     try {
+//         const { testId } = req.params;
+
+//         if (!req.file) {
+//             return next(new AppError("No file uploaded", 400));
+//         }
+
+//         const validTest = await TestModel.findById(testId);
+
+
+//         if (!validTest) {
+//             return next(new AppError("Invalid Test ID. Test not found.", 404));
+//         }
+
+//         const filePath = req.file.path;
+//         const workbook = xlsx.readFile(filePath);
+//         const sheetName = workbook.SheetNames[0];
+//         const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+
+//         const cleanedData = sheetData.slice(1).map(row => row.map(cell => cell?.toString().trim())).filter(row => row.length > 0);
+
+
+
+//         const addedTestDetails = [];
+
+
+
+//         // const updatedValues = {
+//         //     paramterInclude: "Depends on test",
+//         //     sampleCollection: "Available",
+//         //     reportConsuling: "Available",
+//         //     reportTime: "Same Day to 48 Hours",
+//         //     fasting: "Consult your doctor",
+//         //     recommedFor: "Male,Female",
+//         //     age: "All Age Groups",
+//         // };
+
+//         const updatedValues = {
+//             paramterInclude: "On Type",
+//             sampleCollection: "Required",
+//             reportConsuling: "Available",
+//             reportTime: "Depend ",
+//             fasting: "Consult your doctor",
+//             recommedFor: "Male, Female",
+//             age: "All Ages",
+//         };
+
+//         const testRequirement1 = '<p class="ql-align-justify">Gamma Camera imaging, also known as Scintigraphy, is a nuclear medicine technique that captures functional information about organs and tissues using gamma radiation. It is commonly used for detecting bone disorders, thyroid conditions, cardiac issues, and cancerous lesions.</p>';
+
+//         const testDetails1 = '<ul> <li class="ql-align-justify">Patients should inform their doctor about any ongoing medications, allergies, or pre-existing conditions before the scan.</li><li class="ql-align-justify">Fasting is usually not required, but follow any specific instructions provided by your doctor.</li><li class="ql-align-justify">Certain medications or supplements may need to be paused before the scan; consult your doctor for guidance.</li><li class="ql-align-justify">Pregnant or breastfeeding women should consult their doctor before undergoing a Gamma Camera scan.</li><li class="ql-align-justify">Patients should stay well-hydrated and drink plenty of water unless instructed otherwise.</li><li class="ql-align-justify">You may be required to wait for some time after the injection of the radiotracer before imaging.</li><li class="ql-align-justify">Carry previous medical reports, imaging results (CT, MRI, Ultrasound), doctor prescriptions, and medical history records.</li><li class="ql-align-justify">Reach the center at least 30 minutes before your scheduled appointment.</li><li class="ql-align-justify">Please carry identification proof such as an Aadhar card, PAN card, etc.</li></ul>';
+
+//         const testDetails2 = '<ul> <li class="ql-align-justify">मरीज को अपनी चल रही दवाओं, एलर्जी या पूर्व-मौजूदा स्थितियों के बारे में डॉक्टर को पहले सूचित करना चाहिए।</li><li class="ql-align-justify">आमतौर पर उपवास आवश्यक नहीं होता है, लेकिन अपने डॉक्टर द्वारा दिए गए विशिष्ट निर्देशों का पालन करें।</li><li class="ql-align-justify">कुछ दवाओं या पूरक आहार को स्कैन से पहले रोकने की आवश्यकता हो सकती है; इसके लिए अपने डॉक्टर से परामर्श करें।</li><li class="ql-align-justify">गर्भवती या स्तनपान कराने वाली महिलाएँ पहले से ही अपने डॉक्टर से परामर्श करें।</li><li class="ql-align-justify">रोगियों को अच्छी तरह से हाइड्रेटेड रहना चाहिए और पर्याप्त पानी पीना चाहिए जब तक कि अन्यथा निर्देश न दिया जाए।</li><li class="ql-align-justify">रेडियोट्रेसर इंजेक्शन के बाद आपको कुछ समय तक प्रतीक्षा करने की आवश्यकता हो सकती है।</li><li class="ql-align-justify">पिछली चिकित्सा रिपोर्ट, इमेजिंग परिणाम (CT, MRI, अल्ट्रासाउंड), डॉक्टर का पर्चा और चिकित्सा इतिहास रिकॉर्ड साथ लाएँ।</li><li class="ql-align-justify">अपनी निर्धारित नियुक्ति से कम से कम 30 मिनट पहले केंद्र में पहुँचें।</li><li class="ql-align-justify">कृपया आधार कार्ड, पैन कार्ड आदि जैसे पहचान प्रमाण साथ रखें।</li></ul>';
+
+
+
+
+
+
+//         for (const row of cleanedData) {
+//             const department = row[0];
+//             const subDepartment = row[1];
+
+
+//             const testName = row[2];
+//             const baseRate = row[3];
+
+//             console.log(department,subDepartment);
+
+
+
+
+//             if (!testName || !baseRate) {
+//                 console.log("Skipping row due to missing data:", row);
+//                 continue;
+//             }
+
+//             const parsedBaseRate = parseFloat(baseRate);
+//             if (isNaN(parsedBaseRate)) {
+//                 console.log("Skipping row due to invalid Base Rate:", row);
+//                 continue;
+//             }
+
+//             const slugifiedTestName = slugify(testName, { lower: true, strict: true });
+
+//             // **Check if testDetail already exists**
+//             let testDetail = await TestDetailModel.findOne({ testDetailName: testName });
+
+//             if(subDepartment==='Gamma'){
+//             // console.log(testDetail)
+//             // if (testDetail) {
+//             //     console.log("🔍 Existing Test Detail Found:");
+
+//             //     // Updating existing test details
+//             //     testDetail.departement = department;
+//             //     testDetail.Sub_Department = subDepartment;
+//             //     testDetail.testPrice = parsedBaseRate;
+
+//             //     // **Check if these fields are updating correctly**
+
+//             //     testDetail.testDetails1 = testDetails1;
+//             //     testDetail.testDetails2 = testDetails2;
+//             //     testDetail.testRequirement1 = testRequirement1;
+//             //     testDetail.testRequirement2 = "";
+//             //     testDetail.testDeliver1 = "";
+//             //     testDetail.testDeliver2 = "";
+//             //     testDetail.testDiscount = 0;
+//             //     testDetail.sampleCollection = updatedValues.sampleCollection;
+//             //     testDetail.reportConsuling = updatedValues.reportConsuling;
+//             //     testDetail.reportTime = updatedValues.reportTime;
+//             //     testDetail.fasting = updatedValues.fasting;
+//             //     testDetail.recommedFor = updatedValues.recommedFor;
+//             //     testDetail.age = updatedValues.age;
+//             //     testDetail.paramterInclude = updatedValues.paramterInclude;
+//             //     testDetail.slug = slugifiedTestName;
+
+//             //     console.log(testDetail);
+//             //     validTest.testDetail.push(testDetail._id);
+//             //     // addedTestDetails.push(testDetail);
+
+//             //     await testDetail.save();
+//             // }
+//             //  else {
+//             // **If not exists, create new one**
+//             if(subDepartment==='Gamma'){
+//             testDetail = new TestDetailModel({
+//                 departement: department,
+//                 Sub_Department: subDepartment,
+//                 testDetailName: testName,
+//                 category: validTest.testName,
+//                 testPrice: parsedBaseRate,
+//                 testDetails1: testDetails1,
+//                 testDetails2: testDetails2,
+//                 testRequirement1: testRequirement1,
+//                 testRequirement2: "",
+//                 testDeliver1: "",
+//                 testDeliver2: "",
+//                 testDiscount: 0,
+//                 sampleCollection: updatedValues.sampleCollection,
+//                 reportConsuling: updatedValues.reportConsuling,
+//                 reportTime: updatedValues.reportTime,
+//                 fasting: updatedValues.fasting,
+//                 recommedFor: updatedValues.recommedFor,
+//                 age: updatedValues.age,
+//                 paramterInclude: updatedValues.paramterInclude,
+//                 testId,
+//                 slug: slugifiedTestName,
+//             })
+//             await testDetail.save();
+//         validTest.testDetail.push(testDetail._id);
+//         addedTestDetails.push(testDetail);
+//         //   }
+//         }
+
+//     }
+
+
+//         }
+//         // }   
+//         await validTest.save();
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Test details uploaded successfully from Excel (Overwritten if existing).",
+//             data: addedTestDetails,
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         return next(new AppError(error.message, 500));
+//     }
+// };
+
+
 const uploadExcelForTestDetails = async (req, res, next) => {
     try {
-        const { testId } = req.params;
-
         if (!req.file) {
             return next(new AppError("No file uploaded", 400));
-        }
-
-        const validTest = await TestModel.findById(testId);
-        if (!validTest) {
-            return next(new AppError("Invalid Test ID. Test not found.", 404));
         }
 
         const filePath = req.file.path;
@@ -584,158 +751,99 @@ const uploadExcelForTestDetails = async (req, res, next) => {
         const sheetName = workbook.SheetNames[0];
         const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
 
-        const cleanedData = sheetData.slice(1).map(row => row.map(cell => cell?.toString().trim())).filter(row => row.length > 0);
-
-
+        const cleanedData = sheetData.slice(1)
+            .map(row => row.map(cell => cell?.toString().trim()))
+            .filter(row => row.length > 0);
 
         const addedTestDetails = [];
 
 
-        
-        // const updatedValues = {
-        //     paramterInclude: "Depends on test",
-        //     sampleCollection: "Available",
-        //     reportConsuling: "Available",
-        //     reportTime: "Same Day to 48 Hours",
-        //     fasting: "Consult your doctor",
-        //     recommedFor: "Male,Female",
-        //     age: "All Age Groups",
-        // };
-        
         const updatedValues = {
             paramterInclude: "On Type",
             sampleCollection: "Required",
             reportConsuling: "Available",
-            reportTime: "Same Day to 48 Hours",
+            reportTime: "24-hr to 4 days",
             fasting: "Consult your doctor",
-            recommedFor: "Male,Female",
-            age: "Male,Female",
+            recommedFor: "Male, Female",
+            age: "All Ages",
         };
-        
-        const testRequirement1 = '<p class="ql-align-justify">Interventional Radiology (IR) involves minimally invasive, image-guided procedures to diagnose and treat various conditions, including vascular diseases, tumors, and organ dysfunctions. Common IR procedures include angioplasty, embolization, biopsy, radiofrequency ablation, and drainage catheter placement. These procedures provide targeted treatment with minimal recovery time and reduced risks compared to traditional surgeries.</p>';
-        
-        const testDetails1 = '<ul> <li class="ql-align-justify">Patients should inform their doctor about any ongoing medications, allergies, or pre-existing conditions before the procedure.</li><li class="ql-align-justify">Fasting for at least 6-8 hours before the procedure is usually required. Follow specific instructions provided by your doctor.</li><li class="ql-align-justify">Blood tests or imaging may be required before the procedure to assess eligibility.</li><li class="ql-align-justify">If you are on blood thinners or have a bleeding disorder, inform the healthcare provider in advance.</li><li class="ql-align-justify">Pregnant or breastfeeding women should consult their doctor before undergoing any interventional radiology procedure.</li><li class="ql-align-justify">Avoid consuming alcohol or smoking for at least 24 hours before the procedure.</li><li class="ql-align-justify">You may need to stay under observation for a few hours after the procedure, so arrange for a companion if required.</li><li class="ql-align-justify">Carry previous medical reports, imaging results (CT, MRI, Ultrasound), doctor prescriptions, and medical history records.</li><li class="ql-align-justify">Reach the center at least 30 minutes before your scheduled appointment.</li><li class="ql-align-justify">Please carry identification proof such as an Aadhar card, PAN card, etc.</li></ul>';
-        
-        const testDetails2 = '<ul> <li class="ql-align-justify">मरीज को अपनी चल रही दवाओं, एलर्जी या पूर्व-मौजूदा स्थितियों के बारे में डॉक्टर को पहले सूचित करना चाहिए।</li><li class="ql-align-justify">प्रक्रिया से कम से कम 6-8 घंटे पहले उपवास आवश्यक हो सकता है। अपने डॉक्टर द्वारा दिए गए विशिष्ट निर्देशों का पालन करें।</li><li class="ql-align-justify">प्रक्रिया के लिए पात्रता का आकलन करने के लिए रक्त परीक्षण या इमेजिंग आवश्यक हो सकती है।</li><li class="ql-align-justify">यदि आप रक्त पतला करने वाली दवाएँ ले रहे हैं या रक्तस्राव संबंधी विकार है, तो पहले से ही अपने स्वास्थ्य सेवा प्रदाता को सूचित करें।</li><li class="ql-align-justify">गर्भवती या स्तनपान कराने वाली महिलाएँ पहले से ही अपने डॉक्टर से परामर्श करें।</li><li class="ql-align-justify">प्रक्रिया से कम से कम 24 घंटे पहले शराब या धूम्रपान से बचें।</li><li class="ql-align-justify">प्रक्रिया के बाद कुछ घंटों के लिए निगरानी में रहना पड़ सकता है, इसलिए यदि आवश्यक हो तो किसी साथी को साथ लाने की व्यवस्था करें।</li><li class="ql-align-justify">पिछली चिकित्सा रिपोर्ट, इमेजिंग परिणाम (CT, MRI, अल्ट्रासाउंड), डॉक्टर का पर्चा और चिकित्सा इतिहास रिकॉर्ड साथ लाएँ।</li><li class="ql-align-justify">अपनी निर्धारित नियुक्ति से कम से कम 30 मिनट पहले केंद्र में पहुँचें।</li><li class="ql-align-justify">कृपया आधार कार्ड, पैन कार्ड आदि जैसे पहचान प्रमाण साथ रखें।</li></ul>';
-        
-        
-        
-        
 
+        const testRequirement1 = '<p class="ql-align-justify">Pathology tests are essential diagnostic tools that analyze blood, urine, tissues, and other body fluids to detect diseases, monitor health conditions, and assess overall well-being. These tests help in identifying infections, organ function abnormalities, nutritional deficiencies, and chronic diseases like diabetes and thyroid disorders.</p>';
 
-
+        const testDetails1 = '<ul> <li class="ql-align-justify">Patients should inform their doctor about any ongoing medications, allergies, or pre-existing conditions before the test.</li><li class="ql-align-justify">Fasting may be required for specific tests like blood sugar, cholesterol, or lipid profile. Follow your doctor’s instructions carefully.</li><li class="ql-align-justify">Stay well-hydrated, especially for urine and blood tests, to ensure smooth sample collection.</li><li class="ql-align-justify">Avoid alcohol and heavy meals for at least 8-12 hours before the test, if advised by your doctor.</li><li class="ql-align-justify">For hormone and metabolic tests, sample collection timing may be important; check with your healthcare provider.</li><li class="ql-align-justify">Pregnant women should consult their doctor before undergoing any pathology tests that involve radiation or special preparations.</li><li class="ql-align-justify">Carry previous medical reports, doctor prescriptions, and medical history records for better diagnosis.</li><li class="ql-align-justify">Reach the diagnostic center at least 15-30 minutes before your scheduled appointment.</li><li class="ql-align-justify">Please carry identification proof such as an Aadhar card, PAN card, etc.</li></ul>';
+        
+        const testDetails2 = '<ul> <li class="ql-align-justify">मरीज को अपनी चल रही दवाओं, एलर्जी या पूर्व-मौजूदा स्थितियों के बारे में डॉक्टर को पहले सूचित करना चाहिए।</li><li class="ql-align-justify">कुछ परीक्षणों, जैसे कि रक्त शर्करा, कोलेस्ट्रॉल या लिपिड प्रोफाइल के लिए उपवास आवश्यक हो सकता है। अपने डॉक्टर के निर्देशों का ध्यानपूर्वक पालन करें।</li><li class="ql-align-justify">मूत्र और रक्त परीक्षण के लिए अच्छी तरह से हाइड्रेटेड रहें ताकि नमूना आसानी से एकत्र किया जा सके।</li><li class="ql-align-justify">यदि आपके डॉक्टर ने सलाह दी हो, तो परीक्षण से कम से कम 8-12 घंटे पहले शराब और भारी भोजन से बचें।</li><li class="ql-align-justify">हार्मोन और चयापचय परीक्षणों के लिए नमूना एकत्र करने का समय महत्वपूर्ण हो सकता है; अपने स्वास्थ्य सेवा प्रदाता से जाँच करें।</li><li class="ql-align-justify">गर्भवती महिलाएँ किसी भी पैथोलॉजी परीक्षण से पहले अपने डॉक्टर से परामर्श करें, खासकर यदि उसमें विकिरण या विशेष तैयारी की आवश्यकता हो।</li><li class="ql-align-justify">बेहतर निदान के लिए पिछली चिकित्सा रिपोर्ट, डॉक्टर के पर्चे और चिकित्सा इतिहास रिकॉर्ड साथ लाएँ।</li><li class="ql-align-justify">अपनी निर्धारित नियुक्ति से कम से कम 15-30 मिनट पहले केंद्र में पहुँचें।</li><li class="ql-align-justify">कृपया आधार कार्ड, पैन कार्ड आदि जैसे पहचान प्रमाण साथ रखें।</li></ul>';
+        
 
 
         for (const row of cleanedData) {
-            const department = row[0];
-            const subDepartment = row[1];
-            console.log(subDepartment);
+            const department = row[0];  // Department
+            const subDepartment = row[1]; // Sub_Department
+            const serviceType = row[3]; // Service Type
+            // const serviceName = row[3]; ❌ IGNORING `Service_Name`
+            const rate= row[4] ; // StandardOpCategory
             
-            const testName = row[2];
-            const baseRate = row[3];
 
-    
-
-            if (!testName || !baseRate) {
+            if (!department || !subDepartment || !serviceType) {
                 console.log("Skipping row due to missing data:", row);
                 continue;
             }
 
-            const parsedBaseRate = parseFloat(baseRate);
-            if (isNaN(parsedBaseRate)) {
-                console.log("Skipping row due to invalid Base Rate:", row);
-                continue;
+            const parsedBaseRate = parseFloat(rate);
+                        if (isNaN(parsedBaseRate)) {
+                            console.log("Skipping row due to invalid Base Rate:", row);
+                            continue;
+                        }
+
+            const slugifiedServiceType = slugify(serviceType, { lower: true, strict: true });
+
+            // Store all data in PathologyDetail
+            let testDetail = await PathologyDetail.findOne({ testDetailName: serviceType });
+           
+            if(department==='LABORATORY'){
+
+            if (!testDetail) {
+                testDetail = new PathologyDetail({
+                    departement: department,
+                    Sub_Department: subDepartment,
+                    testDetailName: serviceType,
+                    category: serviceType,
+                    testPrice: parsedBaseRate,
+                    testDetails1: testDetails1,
+                    testDetails2: testDetails2,
+                    testRequirement1: testRequirement1,
+                    testRequirement2: "",
+                    testDeliver1: "",
+                    testDeliver2: "",
+                    testDiscount: 0,
+                    sampleCollection: updatedValues.sampleCollection,
+                    reportConsuling: updatedValues.reportConsuling,
+                    reportTime: updatedValues.reportTime,
+                    fasting: updatedValues.fasting,
+                    recommedFor: updatedValues.recommedFor,
+                    age: updatedValues.age,
+                    paramterInclude: updatedValues.paramterInclude,
+                    slug: slugifiedServiceType,
+                });
+
+                await testDetail.save()
+                // addedTestDetails.push(testDetail);
             }
-
-            const slugifiedTestName = slugify(testName, { lower: true, strict: true });
-
-            // **Check if testDetail already exists**
-            let testDetail = await TestDetailModel.findOne({ testDetailName: testName });
-
-
-            // console.log(testDetail);
-
-
-
-
-
-            // if (testDetail) {
-            //     console.log("🔍 Existing Test Detail Found:");
-
-            //     // Updating existing test details
-            //     testDetail.departement = department;
-            //     testDetail.Sub_Department = subDepartment;
-            //     testDetail.testPrice = parsedBaseRate;
-
-            //     // **Check if these fields are updating correctly**
-
-            //     testDetail.testDetails1 = testDetails1;
-            //     testDetail.testDetails2 = testDetails2;
-            //     testDetail.testRequirement1 = testRequirement1;
-            //     testDetail.testRequirement2 = "";
-            //     testDetail.testDeliver1 = "";
-            //     testDetail.testDeliver2 = "";
-            //     testDetail.testDiscount = 0;
-            //     testDetail.sampleCollection = updatedValues.sampleCollection;
-            //     testDetail.reportConsuling = updatedValues.reportConsuling;
-            //     testDetail.reportTime = updatedValues.reportTime;
-            //     testDetail.fasting = updatedValues.fasting;
-            //     testDetail.recommedFor = updatedValues.recommedFor;
-            //     testDetail.age = updatedValues.age;
-            //     testDetail.paramterInclude = updatedValues.paramterInclude;
-            //     testDetail.slug = slugifiedTestName;
-
-            //     console.log(testDetail);
-            //     validTest.testDetail.push(testDetail._id);
-            //     // addedTestDetails.push(testDetail);
-
-            //     await testDetail.save();
-            // // }
-            //  else {
-            // **If not exists, create new one**
-            // if(subDepartment==='Gamma'){
-            testDetail = new TestDetailModel({
-                departement: department,
-                Sub_Department: subDepartment,
-                testDetailName: testName,
-                category: validTest.testName,
-                testPrice: parsedBaseRate,
-                testDetails1: testDetails1,
-                testDetails2: testDetails2,
-                testRequirement1: testRequirement1,
-                testRequirement2: "",
-                testDeliver1: "",
-                testDeliver2: "",
-                testDiscount: 0,
-                sampleCollection: updatedValues.sampleCollection,
-                reportConsuling: updatedValues.reportConsuling,
-                reportTime: updatedValues.reportTime,
-                fasting: updatedValues.fasting,
-                recommedFor: updatedValues.recommedFor,
-                age: updatedValues.age,
-                paramterInclude: updatedValues.paramterInclude,
-                testId,
-                slug: slugifiedTestName,
-            })
-            await testDetail.save();
-            validTest.testDetail.push(testDetail._id);
-            addedTestDetails.push(testDetail);
-          
-
-        
         }
-        // }   
-        await validTest.save();
+        }
 
         res.status(200).json({
             success: true,
-            message: "Test details uploaded successfully from Excel (Overwritten if existing).",
+            message: "Test details uploaded successfully from Excel.",
             data: addedTestDetails,
         });
     } catch (error) {
+        console.log(error);
         return next(new AppError(error.message, 500));
     }
 };
+
+
 
 const uploadTestDetailsInstru = async (req, res, next) => {
     try {

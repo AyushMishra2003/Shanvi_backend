@@ -96,7 +96,8 @@ export const verifyUser = async (req, res) => {
 
     res.status(200).json({
         success:true,
-        message:'Verification successful. You can now log in'
+        message:'Verification successful. You can now log in',
+        data:user
     })
   } catch (error) {
     console.log(error);
@@ -119,7 +120,11 @@ export const login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res.status(200).json({ message: 'Login successful', token });
+    res.status(200).json({
+      success:true,
+      message:"Login Succesfully",
+      data:user
+    })
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

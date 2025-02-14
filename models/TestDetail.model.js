@@ -77,13 +77,9 @@ const TestDetailSchema=new Schema(
          },
          slug: {
             type: String,
-            unique: true,
+            // unique: true,
             // required: true, // ✅ Required slug hona chahiye
           },
-          categorySlug:{
-            type:String,
-            unique:true
-          }
     },
     {
         timestamps:true
@@ -114,6 +110,25 @@ const updateTestSlugs = async (TestDetailModel) => {
   }
 };
 
+
+
+// 🔹 Middleware: Ensure Unique Slug
+TestDetailSchema.pre("save", async function (next) {
+   let slug = slugify(this.testDetailName, { lower: true, strict: true });
+ 
+   let existingTest = await mongoose.models.TestDetail.findOne({ slug });
+   let count = 1;
+ 
+   while (existingTest) {
+     slug = `${slug}-${count}`;
+     existingTest = await mongoose.models.TestDetail.findOne({ slug });
+     count++;
+   }
+ 
+   this.slug = slug;
+   next();
+ });
+ 
 
 const TestDetailModel=model("TestDetail",TestDetailSchema)
 

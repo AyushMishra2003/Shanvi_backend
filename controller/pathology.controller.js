@@ -70,7 +70,6 @@ import PathologyDetail from "../models/pathology.model.js";
  const getPathologyDetails = async (req, res, next) => {
   try {
 
-
     const pathologyDetails = await PathologyDetail.find({});
     if (!pathologyDetails) {
       return next(new AppError("Pathology details not found", 404));
@@ -173,10 +172,34 @@ import PathologyDetail from "../models/pathology.model.js";
   }
 };
 
+const singlePathology=async(req,res,next)=>{
+   try{
+    const {slug}=req.params
+
+    const validPathology=await PathologyDetail.findOne({slug})
+    console.log(validPathology);
+    
+
+    if(!validPathology){
+         return next(new AppError("Pathology is not Found",400))
+    }
+
+    res.status(200).json({
+      success:true,
+      message:"Pathology Details is",
+      data:validPathology
+    })
+        
+   }catch(error){
+     return next(new AppError(error.message,500))
+   }
+}
+
   
 export {
     addPathologyDetails,
     getPathologyDetails,
     deletePathologyDetails,
     updatePathologyDetails,
+    singlePathology
 }
