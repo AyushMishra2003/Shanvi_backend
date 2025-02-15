@@ -2,6 +2,7 @@ import AppError from "../utils/error.utlis.js"
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
 import PathologyDetail from "../models/pathology.model.js";
+import labTagModel from "../models/LabTestTag.model.js";
 
 // Add Pathology Details
  const addPathologyDetails = async (req, res, next) => {
@@ -195,11 +196,84 @@ const singlePathology=async(req,res,next)=>{
    }
 }
 
+const addLabTag=async(req,res,next)=>{
+  try{
+    const {slug}=req.params
+    const {labTagName}=req.body
+    const validlabDetail=await PathologyDetail.findOne({slug})
+
+    if(!validlabDetail){
+      return next(new AppError("lab Details Not Found",400))
+    }
+
+    const labTag=new labTagModel({
+        labTagName,
+        labSlugName:validlabDetail.slug,
+        labId:validlabDetail._id
+    })
+
+    if(!labTag){
+      return next(new AppError("lab Not Added",400))
+    }
+
+    if (req.file) {
+      const result = await cloudinary.v2.uploader.upload(req.file.path, {
+        folder: "lms",
+      });
+
+      if (result) {
+        (labTag.icon.public_id = result.public_id),
+          (labTag.icon.secure_url = result.secure_url);
+      }
+      fs.rm(`uploads/${req.file.filename}`);
+    }
+
+
+    await labTag.save()
+
+    res.status(200).json({
+      success:true,
+      message:"lab Added Succesfully",
+      data:labTag
+    })
+
+
+  }catch(error){
+    return next(new AppError(error.message,500))
+  }
+}
+
+const getLabTag=async(req,res,next)=>{
+ try{  
+
+  const allTag=await labTagModel.find({})
+
+  console.log(allTag);
+  
+
+  if(!allTag){
+    return next(new AppError("Not Found",400))
+  }
+
+  res.status(200).json({
+    success:true,
+    message:'All Tag are',
+    data:allTag
+  })
+  
+ }catch(error){
+  return next(new AppError(error.message,500))
+ }
+}
+
+
   
 export {
     addPathologyDetails,
     getPathologyDetails,
     deletePathologyDetails,
     updatePathologyDetails,
-    singlePathology
+    singlePathology,
+    addLabTag,
+    getLabTag
 }

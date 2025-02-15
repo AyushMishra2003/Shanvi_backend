@@ -208,8 +208,9 @@ const getServiceMoreDetail = async (req, res, next) => {
             "Digital 3.0 Tesla 48 Channel MRI",
             "128 Slice High Speed CT Scan",
             "Digital Gamma Camera",
-            "Fetal Medicine ",
             "Ultrasound (3D/4D / Dopplers/ TIFFA) ",
+            "Fetal Medicine ",
+          
             "Dexa Scan",
             "Digital X-Ray",
             "Intervential Radiology",

@@ -53,7 +53,8 @@ app.use(
       "http://localhost:3000",
       "http://localhost:5174",
       "https://freelance.webakash1806.com",
-      "https://ayush.webakash1806.com"
+      "https://ayush.webakash1806.com",
+      "https://5h8cr5kr-5173.inc1.devtunnels.ms"
     ],
     credentials: true,
   })

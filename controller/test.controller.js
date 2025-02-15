@@ -187,7 +187,6 @@ const getSingleTest = async (req, res, next) => {
 const getSingleTestDetail = async (req, res, next) => {
     try {
 
-
         const { serviceName } = req.body;
         const decodedServiceName = decodeURIComponent(serviceName);
 

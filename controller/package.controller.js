@@ -4,6 +4,7 @@ import { PackageDetail } from "../models/packageDetails.model.js";
 import AppError from "../utils/error.utlis.js"
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
+import PackageTagModel from "../models/PackagTag.model.js";
 
 
 const addPackage = async (req, res, next) => {
@@ -446,6 +447,76 @@ const updatePackageDetails1 = async (req, res, next) => {
 }
 
 
+const addPackageTag=async(req,res,next)=>{
+    try{
+
+      const {slug}=req.params
+
+      const {packageTagName}=req.body
+      const validPackageDetail=await PackageDetail.findOne({slug})
+
+      if(!validPackageDetail){
+        return next(new AppError("Package Details Not Found",400))
+      }
+
+      const packageTag=new PackageTagModel({
+          packageTagName,
+          packageSlugName:validPackageDetail.slug,
+          packageId:validPackageDetail._id
+      })
+
+      if(!packageTag){
+        return next(new AppError("Package Not Added",400))
+      }
+
+      if (req.file) {
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: "lms",
+        });
+  
+        if (result) {
+          (packageTag.icon.public_id = result.public_id),
+            (packageTag.icon.secure_url = result.secure_url);
+        }
+        fs.rm(`uploads/${req.file.filename}`);
+      }
+
+
+      await packageTag.save()
+
+      res.status(200).json({
+        success:true,
+        message:"Package Added Succesfully",
+        data:packageTag
+      })
+  
+
+    }catch(error){
+      return next(new AppError(error.message,500))
+    }
+}
+
+const getPackageTag=async(req,res,next)=>{
+   try{  
+
+    const allTag=await PackageTagModel.find({})
+
+    if(!allTag){
+      return next(new AppError("Not Found",400))
+    }
+
+    res.status(200).json({
+      success:true,
+      message:'All Tag are',
+      data:allTag
+    })
+    
+   }catch(error){
+    return next(new AppError(error.message,500))
+   }
+}
+
+
 
 
 
@@ -459,5 +530,7 @@ export {
   updatePackage,
   deletePackage,
   updatePackageDetails1,
-  getPackageDetailsSlug
+  getPackageDetailsSlug,
+  addPackageTag,
+  getPackageTag
 }

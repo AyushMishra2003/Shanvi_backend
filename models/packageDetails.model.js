@@ -68,6 +68,7 @@ const packageDetailsSchema = new Schema(
       unique: true,
       required: true, // ✅ Required slug hona chahiye
     },
+   
   },
   {
     timestamps: true,

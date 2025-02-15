@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addPackage, addPackageDetails, deletePackage, deletePackageDetails, getPackage, getPackageDetails, getPackageDetailsSlug, updatePackage, updatePackageDetails, updatePackageDetails1 } from "../controller/package.controller.js";
+import { addPackage, addPackageDetails, addPackageTag, deletePackage, deletePackageDetails, getPackage, getPackageDetails, getPackageDetailsSlug, getPackageTag, updatePackage, updatePackageDetails, updatePackageDetails1 } from "../controller/package.controller.js";
 import upload from "../middleware/multer.middleware.js";
 
 
@@ -15,6 +15,9 @@ packageRouter.get("/more/:slug",getPackageDetailsSlug)
 packageRouter.delete("/detail/:packageDetailId",deletePackageDetails)
 packageRouter.put("/detail/:packageDetailId",upload.single("packagePhoto"),updatePackageDetails)
 packageRouter.put("/detail1/:id",updatePackageDetails1)
+packageRouter.post("/tag/:slug",upload.single("icon"),addPackageTag)
+packageRouter.get("/tag",getPackageTag)
+
 
 
 export default packageRouter
