@@ -1,4 +1,5 @@
 import checkoutModel from "../models/checkout.model.js"
+import User from "../models/user.model.js";
 import sendEmail from "../utils/email.utlis.js"
 import AppError from "../utils/error.utlis.js"
 
@@ -6,47 +7,46 @@ import AppError from "../utils/error.utlis.js"
 const addOrder = async (req, res, next) => {
     try {
         const {
-            name,
-            gender,
-            age,
-            phone,
-            whatsappNumber,
-            email,
-            address,
-            city,
-            pincode,
-            orderType, // e.g., "test", "scan", "consultation"
-            orderDetails, // Detailed info based on order type
-            bookingFor, // Self, Family, etc.
+            testName,
             bookingDate,
             bookingTime,
-            locality,
-            cityState 
+            category,
+            rate,
+            email,
+            name,
+            age,
+            phone,
+            altPhone,
+            gender,
+            cityState,
+            
         } = req.body;
 
         console.log(req.body);
         
 
-        // Basic validation
-        if (!name || !gender || !age || !phone || !email || !locality || !cityState) {
-            
-            
-            return next(new AppError("All required fields must be provided", 400));
+
+        const findUser=await User.find({email})
+
+        if(!findUser){
+             return next(new AppError("User not Found",404))
         }
 
+      
         // Create the order
         const newOrder = await checkoutModel.create({
-            fullName:name,
-            gender,
-            age,
-            mobileNumber:phone,
+            name:testName,
+            price:rate,
+            bod:bookingDate,
+            bot:bookingTime,
+            category:category,
+            orderName:name,
             email,
-            address:locality,
-            city:cityState,
-            bookingDate,
-            bookingTime,
-            pincode:"221002"
-        });
+            address:cityState,
+            phone,
+            altPhone
+
+        })
 
         if (!newOrder) {
             return next(new AppError("Order not placed", 400));
@@ -55,14 +55,12 @@ const addOrder = async (req, res, next) => {
         console.log("New order created:", newOrder);
 
         // Prepare dynamic email content
-        let message = `<h1>Thank you for your ${"orderType"} order, ${name}!</h1>
+        let message = `<h1>Thank you for your ${"orderType"} order, ${testName}!</h1>
                        <p>Your order has been successfully placed. Here are the details:</p>
                        <ul>
-                           <li><strong>Name:</strong> ${name}</li>
-                           <li><strong>Age:</strong> ${age}</li>
-                           <li><strong>Gender:</strong> ${gender}</li>
-                           <li><strong>Mobile Number:</strong> ${phone}</li>
-                           <li><strong>Address:</strong> ${address}, ${cityState}</li>
+                           <li><strong>Name:</strong> ${testName}</li>
+                           <li><strong>Rate:</strong> ${rate}</li>
+                           <li><strong>Category:</strong> ${category}</li>
                            <li><strong>Booking Date:</strong> ${bookingDate || "Not Provided"}</li>
                            <li><strong>Booking Time:</strong> ${bookingTime || "Not Provided"}</li>
                        </ul>
@@ -70,10 +68,11 @@ const addOrder = async (req, res, next) => {
                        <p>We will contact you shortly for further updates.</p>`;
 
         // Send confirmation email
-        await sendEmail(email, `Order Confirmation - ${orderType}`, message);
+        await sendEmail(email, `Order Confirmation - ${testName}`, message);
 
         res.status(201).json({
-            success:true,
+            success: true,
+            message:"Order Created Succesfully",
             data: newOrder
         });
 

@@ -4,7 +4,12 @@ const userSchema = new mongoose.Schema({
   name: { type: String },
   email: { type: String, unique: true, required: true },
   verificationCode: { type: String },
-  isVerified: { type: Boolean, default: false }
+  isVerified: { type: Boolean, default: false },
+  member:[
+    {
+      name:{type:String}
+    }
+  ]
 });
 
 const User = mongoose.model('User', userSchema);

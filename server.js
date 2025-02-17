@@ -2,8 +2,18 @@ import cloudinary from 'cloudinary'
 import app from './app.js'
 import ConnectionToDB from './config/dbConnection.js'
 import Razorpay from 'razorpay'
+import Redis from 'ioredis'
 
 const PORT = process.env.PORT || 5500
+const redis = new Redis(); // Default: localhost:6379
+
+redis.on("connect", () => {
+    console.log("✅ Redis Connected!");
+  });
+  
+  redis.on("error", (err) => {
+    console.error("❌ Redis Error:", err);
+  });
 
 // Cloudinary
 

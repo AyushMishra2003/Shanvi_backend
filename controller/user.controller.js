@@ -75,18 +75,23 @@ export const register = async (req, res,next) => {
 export const verifyUser = async (req, res) => {
   try {
     const { email, otp } = req.body;
+
+    console.log(req.body);
+    
     
     const user = await User.findOne({ email });
+   
+    console.log(user);
+    
+
     if (!user) return res.status(400).json({ message: 'User not found' });
     
-    if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
+    // if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
     
 
     if (user.verificationCode !== otp.toString()) {
       return res.status(400).json({ message: 'Invalid verification code' });
     }
-
-    
 
     user.isVerified = true;
     user.verificationCode = null;
@@ -129,6 +134,37 @@ export const login = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const loginwithOrder=async(req,res,next)=>{
+    try{
+      const {email}=req.body
+
+      const validUser=await User.findOne({email})
+
+      if(!validUser){
+         const create=new User({
+          email
+         })
+         await create.save()
+      }
+
+      const verificationCode = crypto.randomInt(100000, 999999).toString();     
+       validUser.verificationCode=verificationCode
+
+       await validUser.save()
+
+      await sendEmail(email, 'Verify Your Account', `Your verification code is: ${verificationCode}`);
+
+      res.status(200).json({
+        success:true,
+        message:"User Registered,Check email for verificicaion code"
+      })
+    }catch(error){
+      console.log(error);
+      
+      return next(new AppError(error.message,500))
+    }
+}
 
 // **4. Logout User**
 export const logout = async (req, res) => {

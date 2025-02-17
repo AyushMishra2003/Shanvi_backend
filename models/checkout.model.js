@@ -2,59 +2,42 @@ import { Schema, model } from "mongoose";
 
 const checkoutSchema = new Schema(
   {
-    fullName: {
-      type: String,
-      required: true,
+    orderName:{
+      type:String
     },
-    gender: {
-      type: String,
-      enum: ["Male", "Female"], // Valid values for gender
-      required: true,
+    age:{
+      type:String
     },
-    age: {
-      type: Number,
-      required: true,
+    phone:{
+      type:String
     },
-    mobileNumber: {
-      type: String,
-      required: true,
+    altPhone:{
+      type:String
     },
-    whatsappNumber: {
-      type: String,
+    address:{
+      type:String
     },
-    email: {
-      type: String,
-      required: true,
+    gender:{
+      type:String
     },
-    address: {
-      type: String,
-      required: true,
+    name:{
+      type:String
     },
-    city: {
-      type: String,
-      required: true,
-      default: "Lucknow", // Default city value
+    category:{
+      type:String
     },
-    pincode: {
-      type: String,
-      required: true,
+    price:{
+      type:String
     },
-   order:[
-    {
-        name:{
-            type:String,
-            required:true
-        },
-        price:{
-            type:Number,
-            required:true
-        },
-        quantity:{
-            type:Number,
-            required:true
-        }
-    }
-   ]
+    bod:{
+      type:String
+    },
+    bot:{
+      type:String
+    },
+    db:{
+      type:String
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

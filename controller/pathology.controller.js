@@ -71,7 +71,7 @@ import labTagModel from "../models/LabTestTag.model.js";
  const getPathologyDetails = async (req, res, next) => {
   try {
 
-    const pathologyDetails = await PathologyDetail.find({});
+    const pathologyDetails = await PathologyDetail.find({}, "testDetailName slug testPrice");
     if (!pathologyDetails) {
       return next(new AppError("Pathology details not found", 404));
     }
