@@ -23,6 +23,9 @@ import { ServiceDetailModel, updateServiceDetailSlugs } from "./models/servicede
 import userRoute from "./routes/user.routes.js";
 import { PackageDetail, updatePackageSlugs } from "./models/packageDetails.model.js";
 import { TestDetailModel, updateTestSlugs } from "./models/TestDetail.model.js";
+import modRoute from "./routes/mod.route.js";
+import bannerRoute from "./routes/Banner.route.js";
+import { addUtils, getUtils } from "./controller/utlis.controller.js";
 
 
 config();
@@ -54,12 +57,15 @@ app.use(
       "http://localhost:5174",
       "https://freelance.webakash1806.com",
       "https://ayush.webakash1806.com",
-      "https://5h8cr5kr-5173.inc1.devtunnels.ms"
+      "https://5h8cr5kr-5173.inc1.devtunnels.ms",
+      "http://192.168.18.8:3000",
+      "http://192.168.1.5:3000/"
     ],
     credentials: true,
   })
 );
 app.use(morgan("dev"));
+
 
 
  
@@ -79,6 +85,11 @@ app.use("/api/v1/contact",contactRoute)
 app.use("/api/v1/gallery",galleryRoute)
 app.use("/api/v1/pathology",pathologyRouter)
 app.use("/api/v1/user",userRoute)
+app.use("/api/v1/mod/user",modRoute)
+app.use("/api/v1/banner",bannerRoute)
+
+app.post("/api/v1/utlis",addUtils)
+app.get("/api/v1/utlis/:url",getUtils)
 
 
 app.get("/test", (req, res) => {
@@ -99,7 +110,7 @@ app.all("*", (req, res) => {
   res.status(404).json({
     success: false,
     status: 404,
-    message: "Oops! pagal h kya  Not Found",
+    message: "Oops! Routes Not Found",
   });
 });
 

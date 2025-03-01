@@ -59,19 +59,21 @@ const getService = async (req, res, next) => {
         const allService = await ServiceModel.find({}).populate('serviceDetails');
 
         const desiredSequence = [
-            "Digital PET CT",
-            "Digital 3.0 Tesla MRI",
-            "128 Slice High Speed CT Scan",
-            "Digital Gamma Camera",
-            "Fetal Medicine Ultrasound (3D/4D/Dopplers/TIFFA)",
-            "Dexa Scan",
-            "Digital X-Ray",
-            "Interventional Radiology",
+            "Digital PET-CT Scan",
+			"Digital 3.0 Tesla MRI(48 Channel)",
+			"128 Slice CT Scan",
+            "Digital Gamma Scans",
+			 "Digital Mammography",
+            "Fetal Medicine",
+			 "Dexa Scan",
+			 "Digital X-Ray",
+			 "UltraSound (3D/4D/Dopplers/TIFFA)",
             "Cardiology",
             "Neurology",
-            "Gastroenterology",
-            "Medical Oncology",
-            "Digital Mammography",
+			"Gastrology",
+			"Medical Oncology",
+			"Therapy",
+			"Interventional Radiology"
         ];
 
         if (!allService) {
@@ -129,20 +131,22 @@ const getDigitalService = async (req, res, next) => {
           console.log("MAI AAYA HU")
           
 
-        const desiredSequence = [
-            "Digital PET CT",
-            "Digital 3.0 Tesla MRI",
-            "128 Slice High Speed CT Scan",
-            "Digital Gamma Camera",
-            "Fetal Medicine Ultrasound (3D/4D/Dopplers/TIFFA)",
-            "Dexa Scan",
-            "Digital X-Ray",
-            "Interventional Radiology",
+          const desiredSequence = [
+            "Digital PET-CT Scan",
+			"Digital 3.0 Tesla MRI(48 Channel)",
+			"128 Slice CT Scan",
+            "Digital Gamma Scans",
+			 "Digital Mammography",
+            "Fetal Medicine",
+			 "Dexa Scan",
+			 "Digital X-Ray",
+			 "UltraSound (3D/4D/Dopplers/TIFFA)",
             "Cardiology",
             "Neurology",
-            "Gastroenterology",
-            "Medical Oncology",
-            "Digital Mammography",
+			"Gastrology",
+			"Medical Oncology",
+			"Therapy",
+			"Interventional Radiology"
         ];
 
         if (!allService) {
@@ -204,21 +208,22 @@ const getServiceMoreDetail = async (req, res, next) => {
 
         // Define the desired serviceDetails sequence
         const desiredSequence = [
-            "Digital PET CT",
-            "Digital 3.0 Tesla 48 Channel MRI",
-            "128 Slice High Speed CT Scan",
-            "Digital Gamma Camera",
-            "Ultrasound (3D/4D / Dopplers/ TIFFA) ",
-            "Fetal Medicine ",
-          
-            "Dexa Scan",
-            "Digital X-Ray",
-            "Intervential Radiology",
+            "Digital PET CT Scan",
+			"Digital 3.0 Tesla MRI",
+			"128 Slice High Speed CT Scan",
+            "Digital Gamma Scans",
+			 "Digital Mammography",
+            "Fetal Medicine",
+			 "Dexa Scan",
+			 "Digital X-Ray",
+			 "Ultrasound (3D/4D/ Dopplers/ TIFFA)",
             "Cardiology",
             "Neurology",
-            "Gastrology",
-            "Medical Oncology",
-            "Digital Mammography",
+			"Gastrology",
+			"Medical Oncology",
+			"Therapy",
+			"Interventional Radiology"
+        
         ].map(name => name.toLowerCase().trim()); // Normalize sequence names
 
         // Extract all serviceDetails, ensuring they are valid

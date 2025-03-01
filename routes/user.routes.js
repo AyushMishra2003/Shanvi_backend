@@ -1,5 +1,5 @@
 import  { Router } from 'express';
-import { forgotPassword, login, loginwithOrder, logout, register, resendVerificationCode, resetPassword, verifyUser } from '../controller/user.controller.js';
+import { forgotPassword, isLogin, login, loginwithOrder, logout, register, resendVerificationCode, resetPassword, verifyUser } from '../controller/user.controller.js';
 // import { register } from '../controller/user.controller.js';
 // import { 
 //   register, verifyUser, login, logout, 
@@ -11,6 +11,7 @@ const userRoute = Router()
 userRoute.post('/register', register);
 userRoute.post('/verify', verifyUser);
 userRoute.post('/login', login);
+userRoute.post('/islogin', isLogin);
 userRoute.post('/login/order', loginwithOrder);
 userRoute.post('/logout', logout);
 userRoute.post('/resend-verification', resendVerificationCode);

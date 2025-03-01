@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp','.avif','.pdf','.xlsx', '.xls']; // Accept more types like webp
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp','.avif','.pdf','.xlsx', '.xls','docx']; // Accept more types like webp
   const ext = path.extname(file.originalname).toLowerCase();
   if (!allowedExtensions.includes(ext)) {
     return cb(new Error('Only images are allowed (.jpg, .jpeg, .png, .webp,.pdf,.xlsx, .xls)'), false);

@@ -3,9 +3,15 @@ import app from './app.js'
 import ConnectionToDB from './config/dbConnection.js'
 import Razorpay from 'razorpay'
 import Redis from 'ioredis'
+import { config } from "dotenv";
+config();  // ✅ Ensure this is at the very top
 
 const PORT = process.env.PORT || 5500
 const redis = new Redis(); // Default: localhost:6379
+
+
+
+
 
 redis.on("connect", () => {
     console.log("✅ Redis Connected!");

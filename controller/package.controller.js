@@ -416,17 +416,6 @@ const updatePackageDetails1 = async (req, res, next) => {
   };
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
   const { id } = req.params;
   let packageDetail = await PackageDetail.findById(id);
 
@@ -517,6 +506,66 @@ const getPackageTag=async(req,res,next)=>{
 }
 
 
+const getPackageByTag=async(req,res,next)=>{
+  try{
+    
+    const {id}=req.body
+    
+    
+    console.log(id);
+    
+    
+    if(!id){
+      
+
+        const specificPackageName = "Health Checkup Package";
+
+        // Fetch only the package with the specific name
+
+        const allPackage=await PackageDetail.find({})
+      
+        if (!allPackage) {
+          return res.status(404).json({
+            success: false,
+            message: "Package not found",
+          });
+        }
+    
+        res.status(200).json({
+          success:true,
+          message:"package are:-",
+          data:allPackage
+        })
+    }else{
+
+       const packageTag=await PackageTagModel.findById(id)
+      console.log(packageTag);
+  
+
+    if(!packageTag){
+       return next(new AppError("Package Tag Not Found",400))
+    }
+
+    
+    const allPackage=await PackageDetail.find({slug:packageTag.packageSlugName})
+
+    if(!allPackage){
+       return next(new AppError("Package Not Found",400))
+    }
+
+    res.status(200).json({
+      success:true,
+      message:"Package are:-",
+      data:allPackage
+    })
+    }
+    
+  }catch(error){
+    return next(new AppError(error.message,500))
+  }
+}
+
+
 
 
 
@@ -532,5 +581,6 @@ export {
   updatePackageDetails1,
   getPackageDetailsSlug,
   addPackageTag,
-  getPackageTag
+  getPackageTag,
+  getPackageByTag
 }

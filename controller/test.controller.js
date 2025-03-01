@@ -8,9 +8,6 @@ import { TestDetailModel } from "../models/TestDetail.model.js";
 import PathologyDetail from "../models/pathology.model.js";
 
 
-
-
-
 const addTest = async (req, res, next) => {
     try {
 
@@ -143,19 +140,22 @@ const getSingleTest = async (req, res, next) => {
         // Define the desired sequence of test names
         const desiredSequence = [
             "Digital PET-CT Scan",
-            "Digital Gamma Camera",
-            "NUCLEAR MEDICINE",
-            "Theranostics",
-            "Digital 3.0 Tesla MRI(48 Channel)",
-            "128 Slice CT Scan",
-            "UltraSound (3D/4D/Dopplers/TIFFA)",
-            "Pathology Test",
-            "Cardio Imaging",
-            "Neuro Imaging",
-            "Digital X-Ray",
-            "Digital Mammography",
-            "DEXA Scan"
+			"Digital 3.0 Tesla MRI(48 Channel)",
+			"128 Slice CT Scan",
+            "Digital Gamma Scans",
+			 "Digital Mammography",
+            "Fetal Medicine",
+			 "Dexa Scan",
+			 "Digital X-Ray",
+			 "UltraSound (3D/4D/Dopplers/TIFFA)",
+            "Cardiology",
+            "Neurology",
+			"Gastrology",
+			"Medical Oncology",
+			"Therapy",
+			"Interventional Radiology"
         ];
+
 
         // Sort tests based on the desired sequence
         const orderedTests = [];
@@ -447,10 +447,6 @@ const getTestDetail = async (req, res, next) => {
 };
 
 
-
-
-
-
 const updateTestDetails = async (req, res, next) => {
     try {
         const { testDetailId } = req.params; // Extract TestDetail ID from params
@@ -547,8 +543,10 @@ const deleteTestDetail = async (req, res, next) => {
 const getTestSpecificDetail = async (req, res, next) => {
     try {
         const { slug } = req.params
-
         const testDetail = await TestDetailModel.findOne({ slug })
+
+        console.log(testDetail);
+        
 
         if (!testDetail) {
             return next(new AppError("Test Detail not Found", 404))
@@ -565,8 +563,31 @@ const getTestSpecificDetail = async (req, res, next) => {
     }
 }
 
+const deleteTestSpecificDetail = async (req, res, next) => {
+    try {
+        const { slug } = req.params
+        const testDetail = await TestDetailModel.findOne({ slug })
+
+        if (!testDetail) {
+            return next(new AppError("Test Detail not Found", 404))
+        }
+
+        await TestDetailModel.deleteOne({slug})
+
+        res.status(200).json({
+            success: true,
+            message: "Test Detail Delete Succesfully",
+            data: testDetail
+        })
+
+    } catch (error) {
+        return next(new AppError(error.message, 500))
+    }
+}
+
 
 // const uploadExcelForTestDetails = async (req, res, next) => {
+
 //     try {
 //         const { testId } = req.params;
 
@@ -604,126 +625,144 @@ const getTestSpecificDetail = async (req, res, next) => {
 //         //     age: "All Age Groups",
 //         // };
 
+//         // const updatedValues = {             
+//         //     paramterInclude: "On Type",             
+//         //     sampleCollection: "Required",             
+//         //     reportConsuling: "Available",             
+//         //     reportTime: "Depends",             
+//         //     fasting: "Consult your doctor",             
+//         //     recommedFor: "Male, Female",             
+//         //     age: "All Ages",         
+//         // };  
 //         const updatedValues = {
-//             paramterInclude: "On Type",
-//             sampleCollection: "Required",
+//             paramterInclude: "Depends on Diagnosis",
+//             sampleCollection: "Required for Tests",
 //             reportConsuling: "Available",
-//             reportTime: "Depend ",
-//             fasting: "Consult your doctor",
+//             reportTime: "Varies Based on Tests",
+//             fasting: "May be required for certain tests",
 //             recommedFor: "Male, Female",
 //             age: "All Ages",
 //         };
-
-//         const testRequirement1 = '<p class="ql-align-justify">Gamma Camera imaging, also known as Scintigraphy, is a nuclear medicine technique that captures functional information about organs and tissues using gamma radiation. It is commonly used for detecting bone disorders, thyroid conditions, cardiac issues, and cancerous lesions.</p>';
-
-//         const testDetails1 = '<ul> <li class="ql-align-justify">Patients should inform their doctor about any ongoing medications, allergies, or pre-existing conditions before the scan.</li><li class="ql-align-justify">Fasting is usually not required, but follow any specific instructions provided by your doctor.</li><li class="ql-align-justify">Certain medications or supplements may need to be paused before the scan; consult your doctor for guidance.</li><li class="ql-align-justify">Pregnant or breastfeeding women should consult their doctor before undergoing a Gamma Camera scan.</li><li class="ql-align-justify">Patients should stay well-hydrated and drink plenty of water unless instructed otherwise.</li><li class="ql-align-justify">You may be required to wait for some time after the injection of the radiotracer before imaging.</li><li class="ql-align-justify">Carry previous medical reports, imaging results (CT, MRI, Ultrasound), doctor prescriptions, and medical history records.</li><li class="ql-align-justify">Reach the center at least 30 minutes before your scheduled appointment.</li><li class="ql-align-justify">Please carry identification proof such as an Aadhar card, PAN card, etc.</li></ul>';
-
-//         const testDetails2 = '<ul> <li class="ql-align-justify">मरीज को अपनी चल रही दवाओं, एलर्जी या पूर्व-मौजूदा स्थितियों के बारे में डॉक्टर को पहले सूचित करना चाहिए।</li><li class="ql-align-justify">आमतौर पर उपवास आवश्यक नहीं होता है, लेकिन अपने डॉक्टर द्वारा दिए गए विशिष्ट निर्देशों का पालन करें।</li><li class="ql-align-justify">कुछ दवाओं या पूरक आहार को स्कैन से पहले रोकने की आवश्यकता हो सकती है; इसके लिए अपने डॉक्टर से परामर्श करें।</li><li class="ql-align-justify">गर्भवती या स्तनपान कराने वाली महिलाएँ पहले से ही अपने डॉक्टर से परामर्श करें।</li><li class="ql-align-justify">रोगियों को अच्छी तरह से हाइड्रेटेड रहना चाहिए और पर्याप्त पानी पीना चाहिए जब तक कि अन्यथा निर्देश न दिया जाए।</li><li class="ql-align-justify">रेडियोट्रेसर इंजेक्शन के बाद आपको कुछ समय तक प्रतीक्षा करने की आवश्यकता हो सकती है।</li><li class="ql-align-justify">पिछली चिकित्सा रिपोर्ट, इमेजिंग परिणाम (CT, MRI, अल्ट्रासाउंड), डॉक्टर का पर्चा और चिकित्सा इतिहास रिकॉर्ड साथ लाएँ।</li><li class="ql-align-justify">अपनी निर्धारित नियुक्ति से कम से कम 30 मिनट पहले केंद्र में पहुँचें।</li><li class="ql-align-justify">कृपया आधार कार्ड, पैन कार्ड आदि जैसे पहचान प्रमाण साथ रखें।</li></ul>';
-
-
-
-
-
+        
+//         const testRequirement1 = `<p class="ql-align-justify">
+//             Medical Oncology is a branch of medicine that focuses on the diagnosis, treatment, and management of cancer using chemotherapy, targeted therapy, immunotherapy, and hormone therapy. It involves a multidisciplinary approach, including coordination with surgical and radiation oncology.
+//         </p>`;
+        
+//         const testDetails1 = `<ul> 
+//             <li class="ql-align-justify">Patients should inform their doctor about any ongoing medications, allergies, or pre-existing conditions before undergoing cancer treatment.</li>
+//             <li class="ql-align-justify">Certain tests may require fasting. Follow specific instructions given by your oncologist.</li>
+//             <li class="ql-align-justify">Chemotherapy or targeted therapy may have side effects. Discuss potential side effects and management strategies with your doctor.</li>
+//             <li class="ql-align-justify">Patients undergoing immunotherapy should be aware of possible immune-related reactions and report any unusual symptoms to their doctor immediately.</li>
+//             <li class="ql-align-justify">Blood tests, biopsies, and imaging tests such as PET-CT or MRI may be required for diagnosis and treatment monitoring.</li>
+//             <li class="ql-align-justify">Maintain a healthy diet and hydration during treatment as per your doctor's recommendations.</li>
+//             <li class="ql-align-justify">Carry all previous medical records, pathology reports, imaging results (CT, MRI, PET-CT), and doctor's prescriptions.</li>
+//             <li class="ql-align-justify">Reach the hospital or cancer center at least 30 minutes before your scheduled appointment.</li>
+//             <li class="ql-align-justify">Please carry identification proof such as an Aadhar card, PAN card, etc.</li>
+//         </ul>`;
+        
+//         const testDetails2 = `<ul> 
+//             <li class="ql-align-justify">मरीज को कैंसर उपचार से पहले अपनी मौजूदा दवाओं, एलर्जी या पूर्व-मौजूदा स्थितियों के बारे में डॉक्टर को सूचित करना चाहिए।</li>
+//             <li class="ql-align-justify">कुछ परीक्षणों के लिए उपवास आवश्यक हो सकता है। अपने ऑन्कोलॉजिस्ट के निर्देशों का पालन करें।</li>
+//             <li class="ql-align-justify">कीमोथेरेपी या टार्गेटेड थेरेपी के दुष्प्रभाव हो सकते हैं। संभावित दुष्प्रभावों और उनके प्रबंधन के बारे में अपने डॉक्टर से चर्चा करें।</li>
+//             <li class="ql-align-justify">इम्यूनोथेरेपी से गुजरने वाले मरीजों को संभावित इम्यून-सम्बंधित प्रतिक्रियाओं के बारे में जागरूक रहना चाहिए और किसी भी असामान्य लक्षण की तुरंत डॉक्टर को जानकारी देनी चाहिए।</li>
+//             <li class="ql-align-justify">रक्त परीक्षण, बायोप्सी और इमेजिंग परीक्षण जैसे कि PET-CT या MRI निदान और उपचार निगरानी के लिए आवश्यक हो सकते हैं।</li>
+//             <li class="ql-align-justify">उपचार के दौरान अपने डॉक्टर की सिफारिशों के अनुसार स्वस्थ आहार और जलयोजन बनाए रखें।</li>
+//             <li class="ql-align-justify">सभी पिछले चिकित्सा रिकॉर्ड, पैथोलॉजी रिपोर्ट, इमेजिंग परिणाम (CT, MRI, PET-CT) और डॉक्टर के प्रिस्क्रिप्शन साथ लाएँ।</li>
+//             <li class="ql-align-justify">अपनी निर्धारित नियुक्ति से कम से कम 30 मिनट पहले अस्पताल या कैंसर केंद्र में पहुँचें।</li>
+//             <li class="ql-align-justify">कृपया आधार कार्ड, पैन कार्ड आदि जैसे पहचान प्रमाण साथ रखें।</li>
+//         </ul>`;
+        
 
 //         for (const row of cleanedData) {
 //             const department = row[0];
 //             const subDepartment = row[1];
-
-
 //             const testName = row[2];
 //             const baseRate = row[3];
-
-//             console.log(department,subDepartment);
-
-
-
-
+        
 //             if (!testName || !baseRate) {
 //                 console.log("Skipping row due to missing data:", row);
 //                 continue;
 //             }
-
+        
 //             const parsedBaseRate = parseFloat(baseRate);
 //             if (isNaN(parsedBaseRate)) {
 //                 console.log("Skipping row due to invalid Base Rate:", row);
 //                 continue;
 //             }
-
+        
 //             const slugifiedTestName = slugify(testName, { lower: true, strict: true });
-
+        
 //             // **Check if testDetail already exists**
-//             let testDetail = await TestDetailModel.findOne({ testDetailName: testName });
-
-//             if(subDepartment==='Gamma'){
-//             // console.log(testDetail)
-//             // if (testDetail) {
-//             //     console.log("🔍 Existing Test Detail Found:");
-
-//             //     // Updating existing test details
-//             //     testDetail.departement = department;
-//             //     testDetail.Sub_Department = subDepartment;
-//             //     testDetail.testPrice = parsedBaseRate;
-
-//             //     // **Check if these fields are updating correctly**
-
-//             //     testDetail.testDetails1 = testDetails1;
-//             //     testDetail.testDetails2 = testDetails2;
-//             //     testDetail.testRequirement1 = testRequirement1;
-//             //     testDetail.testRequirement2 = "";
-//             //     testDetail.testDeliver1 = "";
-//             //     testDetail.testDeliver2 = "";
-//             //     testDetail.testDiscount = 0;
-//             //     testDetail.sampleCollection = updatedValues.sampleCollection;
-//             //     testDetail.reportConsuling = updatedValues.reportConsuling;
-//             //     testDetail.reportTime = updatedValues.reportTime;
-//             //     testDetail.fasting = updatedValues.fasting;
-//             //     testDetail.recommedFor = updatedValues.recommedFor;
-//             //     testDetail.age = updatedValues.age;
-//             //     testDetail.paramterInclude = updatedValues.paramterInclude;
-//             //     testDetail.slug = slugifiedTestName;
-
-//             //     console.log(testDetail);
-//             //     validTest.testDetail.push(testDetail._id);
-//             //     // addedTestDetails.push(testDetail);
-
-//             //     await testDetail.save();
-//             // }
-//             //  else {
-//             // **If not exists, create new one**
-//             if(subDepartment==='Gamma'){
-//             testDetail = new TestDetailModel({
-//                 departement: department,
-//                 Sub_Department: subDepartment,
-//                 testDetailName: testName,
-//                 category: validTest.testName,
-//                 testPrice: parsedBaseRate,
-//                 testDetails1: testDetails1,
-//                 testDetails2: testDetails2,
-//                 testRequirement1: testRequirement1,
-//                 testRequirement2: "",
-//                 testDeliver1: "",
-//                 testDeliver2: "",
-//                 testDiscount: 0,
-//                 sampleCollection: updatedValues.sampleCollection,
-//                 reportConsuling: updatedValues.reportConsuling,
-//                 reportTime: updatedValues.reportTime,
-//                 fasting: updatedValues.fasting,
-//                 recommedFor: updatedValues.recommedFor,
-//                 age: updatedValues.age,
-//                 paramterInclude: updatedValues.paramterInclude,
-//                 testId,
-//                 slug: slugifiedTestName,
-//             })
-//             await testDetail.save();
-//         validTest.testDetail.push(testDetail._id);
-//         addedTestDetails.push(testDetail);
-//         //   }
+//             let testDetail = await TestDetailModel.findOne({ slug: slugifiedTestName });
+        
+//             if (testDetail) {
+//                 // **If exists, update it**
+//                 testDetail = await TestDetailModel.findOneAndUpdate(
+//                     { slug: slugifiedTestName },
+//                     {
+//                         departement: department,
+//                         Sub_Department: subDepartment,
+//                         testDetailName: testName,
+//                         category: validTest.testName,
+//                         testPrice: parsedBaseRate,
+//                         testDetails1: testDetails1,
+//                         testDetails2: testDetails2,
+//                         testRequirement1: testRequirement1,
+//                         testRequirement2: "",
+//                         testDeliver1: "",
+//                         testDeliver2: "",
+//                         testDiscount: 0,
+//                         sampleCollection: updatedValues.sampleCollection,
+//                         reportConsuling: updatedValues.reportConsuling,
+//                         reportTime: updatedValues.reportTime,
+//                         fasting: updatedValues.fasting,
+//                         recommedFor: updatedValues.recommedFor,
+//                         age: updatedValues.age,
+//                         paramterInclude: updatedValues.paramterInclude,
+//                         testId,
+//                     },
+//                     { new: true } // **Returns the updated document**
+//                 );
+//             } else {
+//                 // **If not found, create a new record**
+//                 testDetail = new TestDetailModel({
+//                     departement: department,
+//                     Sub_Department: subDepartment,
+//                     testDetailName: testName,
+//                     category: validTest.testName,
+//                     testPrice: parsedBaseRate,
+//                     testDetails1: testDetails1,
+//                     testDetails2: testDetails2,
+//                     testRequirement1: testRequirement1,
+//                     testRequirement2: "",
+//                     testDeliver1: "",
+//                     testDeliver2: "",
+//                     testDiscount: 0,
+//                     sampleCollection: updatedValues.sampleCollection,
+//                     reportConsuling: updatedValues.reportConsuling,
+//                     reportTime: updatedValues.reportTime,
+//                     fasting: updatedValues.fasting,
+//                     recommedFor: updatedValues.recommedFor,
+//                     age: updatedValues.age,
+//                     paramterInclude: updatedValues.paramterInclude,
+//                     testId,
+//                     slug: slugifiedTestName,
+//                 });
+        
+//                 await testDetail.save();
+//                 validTest.testDetail.push(testDetail._id);
+//                 addedTestDetails.push(testDetail);
+//             }
 //         }
-
-//     }
-
-
-//         }
+        
+//         await validTest.save();
+        
+//         res.status(200).json({
+//             success: true,
+//             message: "Test details uploaded successfully from Excel (Overwritten if existing).",
+//             data: addedTestDetails,
+//         });
+        
 //         // }   
 //         await validTest.save();
 
@@ -740,107 +779,207 @@ const getTestSpecificDetail = async (req, res, next) => {
 
 
 const uploadExcelForTestDetails = async (req, res, next) => {
+
     try {
+        const { testId } = req.params;
+
         if (!req.file) {
             return next(new AppError("No file uploaded", 400));
         }
-
-        const filePath = req.file.path;
-        const workbook = xlsx.readFile(filePath);
-        const sheetName = workbook.SheetNames[0];
-        const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-
-        const cleanedData = sheetData.slice(1)
-            .map(row => row.map(cell => cell?.toString().trim()))
-            .filter(row => row.length > 0);
-
-        const addedTestDetails = [];
-
-
-        const updatedValues = {
-            paramterInclude: "On Type",
-            sampleCollection: "Required",
-            reportConsuling: "Available",
-            reportTime: "24-hr to 4 days",
-            fasting: "Consult your doctor",
-            recommedFor: "Male, Female",
-            age: "All Ages",
-        };
-
-        const testRequirement1 = '<p class="ql-align-justify">Pathology tests are essential diagnostic tools that analyze blood, urine, tissues, and other body fluids to detect diseases, monitor health conditions, and assess overall well-being. These tests help in identifying infections, organ function abnormalities, nutritional deficiencies, and chronic diseases like diabetes and thyroid disorders.</p>';
-
-        const testDetails1 = '<ul> <li class="ql-align-justify">Patients should inform their doctor about any ongoing medications, allergies, or pre-existing conditions before the test.</li><li class="ql-align-justify">Fasting may be required for specific tests like blood sugar, cholesterol, or lipid profile. Follow your doctor’s instructions carefully.</li><li class="ql-align-justify">Stay well-hydrated, especially for urine and blood tests, to ensure smooth sample collection.</li><li class="ql-align-justify">Avoid alcohol and heavy meals for at least 8-12 hours before the test, if advised by your doctor.</li><li class="ql-align-justify">For hormone and metabolic tests, sample collection timing may be important; check with your healthcare provider.</li><li class="ql-align-justify">Pregnant women should consult their doctor before undergoing any pathology tests that involve radiation or special preparations.</li><li class="ql-align-justify">Carry previous medical reports, doctor prescriptions, and medical history records for better diagnosis.</li><li class="ql-align-justify">Reach the diagnostic center at least 15-30 minutes before your scheduled appointment.</li><li class="ql-align-justify">Please carry identification proof such as an Aadhar card, PAN card, etc.</li></ul>';
         
-        const testDetails2 = '<ul> <li class="ql-align-justify">मरीज को अपनी चल रही दवाओं, एलर्जी या पूर्व-मौजूदा स्थितियों के बारे में डॉक्टर को पहले सूचित करना चाहिए।</li><li class="ql-align-justify">कुछ परीक्षणों, जैसे कि रक्त शर्करा, कोलेस्ट्रॉल या लिपिड प्रोफाइल के लिए उपवास आवश्यक हो सकता है। अपने डॉक्टर के निर्देशों का ध्यानपूर्वक पालन करें।</li><li class="ql-align-justify">मूत्र और रक्त परीक्षण के लिए अच्छी तरह से हाइड्रेटेड रहें ताकि नमूना आसानी से एकत्र किया जा सके।</li><li class="ql-align-justify">यदि आपके डॉक्टर ने सलाह दी हो, तो परीक्षण से कम से कम 8-12 घंटे पहले शराब और भारी भोजन से बचें।</li><li class="ql-align-justify">हार्मोन और चयापचय परीक्षणों के लिए नमूना एकत्र करने का समय महत्वपूर्ण हो सकता है; अपने स्वास्थ्य सेवा प्रदाता से जाँच करें।</li><li class="ql-align-justify">गर्भवती महिलाएँ किसी भी पैथोलॉजी परीक्षण से पहले अपने डॉक्टर से परामर्श करें, खासकर यदि उसमें विकिरण या विशेष तैयारी की आवश्यकता हो।</li><li class="ql-align-justify">बेहतर निदान के लिए पिछली चिकित्सा रिपोर्ट, डॉक्टर के पर्चे और चिकित्सा इतिहास रिकॉर्ड साथ लाएँ।</li><li class="ql-align-justify">अपनी निर्धारित नियुक्ति से कम से कम 15-30 मिनट पहले केंद्र में पहुँचें।</li><li class="ql-align-justify">कृपया आधार कार्ड, पैन कार्ड आदि जैसे पहचान प्रमाण साथ रखें।</li></ul>';
-        
+        const result = await TestDetailModel.updateMany(
+            { category: "Fetail Medicine" },  // Pehle isko search karo
+            { $set: { category: "Fetal Medicine" } }  // Phir update karo
+        );
 
 
-        for (const row of cleanedData) {
-            const department = row[0];  // Department
-            const subDepartment = row[1]; // Sub_Department
-            const serviceType = row[3]; // Service Type
-            // const serviceName = row[3]; ❌ IGNORING `Service_Name`
-            const rate= row[4] ; // StandardOpCategory
-            
 
-            if (!department || !subDepartment || !serviceType) {
-                console.log("Skipping row due to missing data:", row);
-                continue;
-            }
-
-            const parsedBaseRate = parseFloat(rate);
-                        if (isNaN(parsedBaseRate)) {
-                            console.log("Skipping row due to invalid Base Rate:", row);
-                            continue;
-                        }
-
-            const slugifiedServiceType = slugify(serviceType, { lower: true, strict: true });
-
-            // Store all data in PathologyDetail
-            let testDetail = await PathologyDetail.findOne({ testDetailName: serviceType });
-           
-            if(department==='LABORATORY'){
-
-            if (!testDetail) {
-                testDetail = new PathologyDetail({
-                    departement: department,
-                    Sub_Department: subDepartment,
-                    testDetailName: serviceType,
-                    category: serviceType,
-                    testPrice: parsedBaseRate,
-                    testDetails1: testDetails1,
-                    testDetails2: testDetails2,
-                    testRequirement1: testRequirement1,
-                    testRequirement2: "",
-                    testDeliver1: "",
-                    testDeliver2: "",
-                    testDiscount: 0,
-                    sampleCollection: updatedValues.sampleCollection,
-                    reportConsuling: updatedValues.reportConsuling,
-                    reportTime: updatedValues.reportTime,
-                    fasting: updatedValues.fasting,
-                    recommedFor: updatedValues.recommedFor,
-                    age: updatedValues.age,
-                    paramterInclude: updatedValues.paramterInclude,
-                    slug: slugifiedServiceType,
-                });
-
-                await testDetail.save()
-                // addedTestDetails.push(testDetail);
-            }
-        }
-        }
+        // }   
+        // await result.save();
 
         res.status(200).json({
             success: true,
-            message: "Test details uploaded successfully from Excel.",
-            data: addedTestDetails,
+            message: "Test details uploaded successfully from Excel (Overwritten if existing).",
+            data: result,
         });
     } catch (error) {
         console.log(error);
         return next(new AppError(error.message, 500));
     }
-};
+}
+
+
+
+// const uploadExcelForTestDetails = async (req, res, next) => {
+//     try {
+//         const { testId } = req.params;
+//         console.log("Received Test ID:", testId);
+
+//         // Step 1: Find TestModel by testId
+//         const test = await TestModel.findById(testId);
+//         if (!test) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Test not found.",
+//             });
+//         }
+//         console.log("Found Test:", test);
+
+//         // Step 2: Fetch TestDetail using testDetail array from TestModel
+//         if (!test.testDetail || test.testDetail.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "No testDetail IDs found in TestModel.",
+//             });
+//         }
+
+//         console.log("TestDetail IDs:", test.testDetail);
+
+//         const testDetails = await TestDetailModel.find({ _id: { $in: test.testDetail } });
+
+//         if (testDetails.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "No TestDetails found for this test.",
+//             });
+//         }
+
+//         console.log("Fetched TestDetails:", testDetails);
+
+//         for (const detail of testDetails) {
+//             const newSlug = slugify(detail.testDetailName, { lower: true, strict: true });
+
+//             await TestDetailModel.findByIdAndUpdate(detail._id, { slug: newSlug });
+
+//             console.log(`Updated slug for ${detail.testDetailName} => ${newSlug}`);
+//         }
+
+//         // Step 3: Update TestDetails
+//         // const updateResult = await TestDetailModel.updateMany(
+//         //     { _id: { $in: test.testDetail } },
+//         //     { $set: {  category:"Fetal Medicine"} } // Change this field as per requirement
+//         // );
+
+//         // console.log("Updated TestDetails:", updateResult);
+
+//         return res.status(200).json({
+//             success: true,
+//             message: "All test details updated successfully.",
+//             data: testDetails
+//         });
+
+//     } catch (error) {
+//         console.error("Error updating test details:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Internal server error.",
+//         });
+//     }
+// };
+
+
+// const uploadExcelForTestDetails = async (req, res, next) => {
+//     try {
+//         if (!req.file) {
+//             return next(new AppError("No file uploaded", 400));
+//         }
+
+//         const filePath = req.file.path;
+//         const workbook = xlsx.readFile(filePath);
+//         const sheetName = workbook.SheetNames[0];
+//         const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+
+//         const cleanedData = sheetData.slice(1)
+//             .map(row => row.map(cell => cell?.toString().trim()))
+//             .filter(row => row.length > 0);
+
+//         const addedTestDetails = [];
+
+
+//         const updatedValues = {
+//             paramterInclude: "On Type",
+//             sampleCollection: "Required",
+//             reportConsuling: "Available",
+//             reportTime: "24-hr to 4 days",
+//             fasting: "Consult your doctor",
+//             recommedFor: "Male, Female",
+//             age: "All Ages",
+//         };
+
+//         const testRequirement1 = '<p class="ql-align-justify">Pathology tests are essential diagnostic tools that analyze blood, urine, tissues, and other body fluids to detect diseases, monitor health conditions, and assess overall well-being. These tests help in identifying infections, organ function abnormalities, nutritional deficiencies, and chronic diseases like diabetes and thyroid disorders.</p>';
+
+//         const testDetails1 = '<ul> <li class="ql-align-justify">Patients should inform their doctor about any ongoing medications, allergies, or pre-existing conditions before the test.</li><li class="ql-align-justify">Fasting may be required for specific tests like blood sugar, cholesterol, or lipid profile. Follow your doctor’s instructions carefully.</li><li class="ql-align-justify">Stay well-hydrated, especially for urine and blood tests, to ensure smooth sample collection.</li><li class="ql-align-justify">Avoid alcohol and heavy meals for at least 8-12 hours before the test, if advised by your doctor.</li><li class="ql-align-justify">For hormone and metabolic tests, sample collection timing may be important; check with your healthcare provider.</li><li class="ql-align-justify">Pregnant women should consult their doctor before undergoing any pathology tests that involve radiation or special preparations.</li><li class="ql-align-justify">Carry previous medical reports, doctor prescriptions, and medical history records for better diagnosis.</li><li class="ql-align-justify">Reach the diagnostic center at least 15-30 minutes before your scheduled appointment.</li><li class="ql-align-justify">Please carry identification proof such as an Aadhar card, PAN card, etc.</li></ul>';
+
+//         const testDetails2 = '<ul> <li class="ql-align-justify">मरीज को अपनी चल रही दवाओं, एलर्जी या पूर्व-मौजूदा स्थितियों के बारे में डॉक्टर को पहले सूचित करना चाहिए।</li><li class="ql-align-justify">कुछ परीक्षणों, जैसे कि रक्त शर्करा, कोलेस्ट्रॉल या लिपिड प्रोफाइल के लिए उपवास आवश्यक हो सकता है। अपने डॉक्टर के निर्देशों का ध्यानपूर्वक पालन करें।</li><li class="ql-align-justify">मूत्र और रक्त परीक्षण के लिए अच्छी तरह से हाइड्रेटेड रहें ताकि नमूना आसानी से एकत्र किया जा सके।</li><li class="ql-align-justify">यदि आपके डॉक्टर ने सलाह दी हो, तो परीक्षण से कम से कम 8-12 घंटे पहले शराब और भारी भोजन से बचें।</li><li class="ql-align-justify">हार्मोन और चयापचय परीक्षणों के लिए नमूना एकत्र करने का समय महत्वपूर्ण हो सकता है; अपने स्वास्थ्य सेवा प्रदाता से जाँच करें।</li><li class="ql-align-justify">गर्भवती महिलाएँ किसी भी पैथोलॉजी परीक्षण से पहले अपने डॉक्टर से परामर्श करें, खासकर यदि उसमें विकिरण या विशेष तैयारी की आवश्यकता हो।</li><li class="ql-align-justify">बेहतर निदान के लिए पिछली चिकित्सा रिपोर्ट, डॉक्टर के पर्चे और चिकित्सा इतिहास रिकॉर्ड साथ लाएँ।</li><li class="ql-align-justify">अपनी निर्धारित नियुक्ति से कम से कम 15-30 मिनट पहले केंद्र में पहुँचें।</li><li class="ql-align-justify">कृपया आधार कार्ड, पैन कार्ड आदि जैसे पहचान प्रमाण साथ रखें।</li></ul>';
+
+
+
+//         for (const row of cleanedData) {
+//             const department = row[0];  // Department
+//             const subDepartment = row[1]; // Sub_Department
+//             const serviceType = row[2]; // Service Type
+//             // const serviceName = row[3]; ❌ IGNORING `Service_Name`
+//             const rate= row[3] ; // StandardOpCategory
+
+
+//             if (!department || !subDepartment || !serviceType) {
+//                 console.log("Skipping row due to missing data:", row);
+//                 continue;
+//             }
+
+//             const parsedBaseRate = parseFloat(rate);
+//                         if (isNaN(parsedBaseRate)) {
+//                             console.log("Skipping row due to invalid Base Rate:", row);
+//                             continue;
+//                         }
+
+//             const slugifiedServiceType = slugify(serviceType, { lower: true, strict: true });
+
+//             // Store all data in PathologyDetail
+//             let testDetail = await PathologyDetail.findOne({ testDetailName: serviceType });
+
+//             if(subDepartment===''){
+
+//             if (!testDetail) {
+//                 testDetail = new PathologyDetail({
+//                     departement: department,
+//                     Sub_Department: subDepartment,
+//                     testDetailName: serviceType,
+//                     category: serviceType,
+//                     testPrice: parsedBaseRate,
+//                     testDetails1: testDetails1,
+//                     testDetails2: testDetails2,
+//                     testRequirement1: testRequirement1,
+//                     testRequirement2: "",
+//                     testDeliver1: "",
+//                     testDeliver2: "",
+//                     testDiscount: 0,
+//                     sampleCollection: updatedValues.sampleCollection,
+//                     reportConsuling: updatedValues.reportConsuling,
+//                     reportTime: updatedValues.reportTime,
+//                     fasting: updatedValues.fasting,
+//                     recommedFor: updatedValues.recommedFor,
+//                     age: updatedValues.age,
+//                     paramterInclude: updatedValues.paramterInclude,
+//                     slug: slugifiedServiceType,
+//                 });
+
+//                 await testDetail.save()
+//                 // addedTestDetails.push(testDetail);
+//             }
+//             }
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Test details uploaded successfully from Excel.",
+//             data: addedTestDetails,
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         return next(new AppError(error.message, 500));
+//     }
+// };
 
 
 
@@ -996,5 +1135,6 @@ export {
     getTestSpecificDetail,
     uploadExcelForTestDetails,
     uploadTestDetailsInstru,
-    updateSpecificTestFields
+    updateSpecificTestFields,
+    deleteTestSpecificDetail
 }
