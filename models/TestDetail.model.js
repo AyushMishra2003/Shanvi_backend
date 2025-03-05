@@ -73,7 +73,7 @@ const TestDetailSchema=new Schema(
          testId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'TestModel', 
-            required: true,
+      
          },
          slug: {
             type: String,

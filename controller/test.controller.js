@@ -6,6 +6,7 @@ import xlsx from "xlsx";
 import TestModel from "../models/Test.model.js";
 import { TestDetailModel } from "../models/TestDetail.model.js";
 import PathologyDetail from "../models/pathology.model.js";
+import { ServiceDetailModel } from "../models/servicedetails.model.js";
 
 
 const addTest = async (req, res, next) => {
@@ -183,42 +184,95 @@ const getSingleTest = async (req, res, next) => {
     }
 };
 
-
 const getSingleTestDetail = async (req, res, next) => {
     try {
 
         const { serviceName } = req.body;
         const decodedServiceName = decodeURIComponent(serviceName);
 
-        // Fetch the test data
-        const test = await TestModel.findOne({ refServiceName: decodedServiceName })
-            .populate('testDetail', '_id testDetailName') // Fetch only _id and testDetailName
-            .lean();
+        const regexCategory = new RegExp(decodedServiceName.replace(/-/g, ''), 'i');
 
-        if (!test) {
+
+        const details = await TestDetailModel.find({ 
+            category: { $regex: regexCategory } 
+        });
+
+        // Fetch the test data
+        // const test = await TestModel.findOne({ refServiceName: decodedServiceName })
+        //     .populate('testDetail', '_id testDetailName') // Fetch only _id and testDetailName
+        //     .lean();
+
+        // if (!test) {
+        //     return next(new AppError("Test Not Found", 400));
+        // }
+
+        // const { page = 1, limit = 50 } = req.query; 
+        // const testId = test._id;
+
+        // Count the total number of test details for the given testId
+        // const total = await TestDetailModel.countDocuments({ testId });
+
+        // Fetch the test details with pagination
+        // const testDetails = await TestDetailModel.find({ testId })
+        //     .skip((page - 1) * limit) // Skip records based on the current page
+        //     .limit(parseInt(limit)); // Limit the number of records
+
+        // Send response with both test and test details
+        // res.status(200).json({
+        //     success: true,
+        //     message: "Test details fetched successfully",
+        //     // testData: test, // Test Data
+        //     data: testDetails, // Paginated Test Details
+        //     total, // Total number of records
+        //     page: parseInt(page), // Current page
+        //     totalPages: Math.ceil(total / limit), // Total number of pages
+        // });
+
+        res.status(200).json({
+            success: true,
+            message: "Test details fetched successfully",
+ 
+            data: details, 
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+
+
+const getServiceTestDetail = async (req, res, next) => {
+    try {
+        
+        const {slugName}=req.params
+        const validService=await ServiceDetailModel.findOne({slug:slugName})
+
+        if(!validService){
+            return next(new AppError("Service is Not Valid",400))
+        }
+
+
+        
+        const regexCategory = new RegExp(validService?.serviceDetailName.replace(/-/g, ''), 'i');
+
+        const details = await TestDetailModel.find({ 
+            category: { $regex: regexCategory } 
+        });
+
+
+        if (!details) {
             return next(new AppError("Test Not Found", 400));
         }
 
-        const { page = 1, limit = 50 } = req.query; // Default limit set to 50
-        const testId = test._id;
-
-        // Count the total number of test details for the given testId
-        const total = await TestDetailModel.countDocuments({ testId });
-
-        // Fetch the test details with pagination
-        const testDetails = await TestDetailModel.find({ testId })
-            .skip((page - 1) * limit) // Skip records based on the current page
-            .limit(parseInt(limit)); // Limit the number of records
+    
 
         // Send response with both test and test details
         res.status(200).json({
             success: true,
             message: "Test details fetched successfully",
-            // testData: test, // Test Data
-            data: testDetails, // Paginated Test Details
-            total, // Total number of records
-            page: parseInt(page), // Current page
-            totalPages: Math.ceil(total / limit), // Total number of pages
+ 
+            data: details, 
         });
 
     } catch (error) {
@@ -283,7 +337,14 @@ const updateTest = async (req, res, next) => {
         console.error("Error updating test:", error);
         return next(new AppError(error.message, 500));
     }
-};
+}
+
+
+
+
+
+
+
 
 const deleteTest = async (req, res, next) => {
     try {
@@ -326,48 +387,82 @@ const deleteTest = async (req, res, next) => {
 const addTestDetails = async (req, res, next) => {
     try {
 
-        const { testId } = req.params
+        const {slug}=req.params
 
-        const { testDetailName, category, testPrice, testDetails1, testDetails2, testDiscount, testRequirement2, testRequirement1, testDeliver1, testDeliver2, refService } = req.body
-
-
-
-
-        // if(!testDetailName || !category || !testPrice || !testDetails1 || !testDetails2 || !testDiscount || !testRequirement1 || !testRequirement2 || !testDeliver1 || !testDeliver2){
-        //     return next(new AppError("All Field are Required",400))
-        // }
-
-        const validTest = await TestModel.findById(testId)
-
-        if (!validTest) {
-            return next(new AppError("Test is not Found", 404))
-        }
-
-        const addTestDetail = new TestDetailModel({
+        const {
             testDetailName,
             category,
-            testPrice,
-            testDetails1,
-            testDetails2,
+            department,
+            fasting,
+            paramterInclude,
+            recommedFor,
+            testRequirement,
+            testDetails,
             testDiscount,
-            testRequirement1,
-            testRequirement2,
-            testDeliver1,
-            testDeliver2,
+            testInstructionsHin,
+            testInstructionsEng,
+            refService,
+            reportConsuling,
+            sampleCollection,
+            age,
+            testPrice,
+            reportTime,
+            testId
+          } = req.body; // 🔹req.body` 
+
+          console.log(req.body);
+          
+
+        const validService=await ServiceDetailModel.findOne({slug})
+        
+        if(!validService){
+             return next(new AppError("Service is not Valid",400))
+        }
+         
+         // 🔹 Create a slug for testDetailName
+         let testSlug = slugify(testDetailName, { lower: true, strict: true });
+
+         // 🔹 Ensure the slug is unique
+         let existingTest = await TestDetailModel.findOne({ slug: testSlug });
+         let count = 1;
+         while (existingTest) {
+             testSlug = `${testSlug}-${count}`;
+             existingTest = await TestDetailModel.findOne({ slug: testSlug });
+             count++;
+         }
+ 
+
+
+        
+          const addTestDetail = new TestDetailModel({
+            testDetailName,
+            fasting,
+            paramterInclude,
+            recommedFor,
+            category:validService.serviceDetailName,
+            departement:validService.serviceDetailName,
+            refService:validService.serviceDetailName,
+            sampleCollection,
+            age,
+            reportTime,
+            reportConsuling,
+            testPrice,
+            testDiscount,
+            testRequirement1:testDetails,
+            testDetails1:testInstructionsEng,
+            testDetails2:testInstructionsHin,
+            refService:validService.serviceDetailName,
             testId,
-            refService
-        })
+            slug:testSlug
+           })
 
-
-
-
-
-        await validTest.testDetail.push(addTestDetail._id);
-        await validTest.save();
+        // await validTest.testDetail.push(addTestDetail._id);
+        // await validTest.save();
 
 
 
         await addTestDetail.save()
+
 
 
         res.status(200).json({
@@ -492,7 +587,6 @@ const updateTestDetails = async (req, res, next) => {
     }
 };
 
-
 const deleteTestDetail = async (req, res, next) => {
     try {
         const { testDetailId } = req.params; // Extract TestDetail ID from params
@@ -543,9 +637,12 @@ const deleteTestDetail = async (req, res, next) => {
 const getTestSpecificDetail = async (req, res, next) => {
     try {
         const { slug } = req.params
-        const testDetail = await TestDetailModel.findOne({ slug })
 
-        console.log(testDetail);
+        console.log(req.params);
+        
+        const testDetail = await TestDetailModel.findOne({slug})
+
+        // console.log(testDetail);
         
 
         if (!testDetail) {
@@ -1136,5 +1233,6 @@ export {
     uploadExcelForTestDetails,
     uploadTestDetailsInstru,
     updateSpecificTestFields,
-    deleteTestSpecificDetail
+    deleteTestSpecificDetail,
+    getServiceTestDetail
 }

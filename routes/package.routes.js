@@ -17,7 +17,6 @@ packageRouter.delete("/detail/:packageDetailId",deletePackageDetails)
 packageRouter.put("/detail/:packageDetailId",upload.single("packagePhoto"),updatePackageDetails)
 packageRouter.put("/detail1/:id",updatePackageDetails1)
 packageRouter.post("/tag/:slug",upload.single("icon"),addPackageTag)
-
 packageRouter.get("/tag",getPackageTag)
 
 

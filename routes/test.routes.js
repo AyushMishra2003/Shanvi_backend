@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addTest, addTestDetails, deleteTest, deleteTestDetail, deleteTestSpecificDetail, getSingleTest, getSingleTestDetail, getTest, getTestDetail, getTestSpecificDetail, updateSpecificTestFields, updateTest, updateTestDetails, uploadExcelForTestDetails, uploadTestDetailsInstru } from "../controller/test.controller.js";
+import { addTest, addTestDetails, deleteTest, deleteTestDetail, deleteTestSpecificDetail, getServiceTestDetail, getSingleTest, getSingleTestDetail, getTest, getTestDetail, getTestSpecificDetail, updateSpecificTestFields, updateTest, updateTestDetails, uploadExcelForTestDetails, uploadTestDetailsInstru } from "../controller/test.controller.js";
 import upload from "../middleware/multer.middleware.js";
 
 
@@ -14,7 +14,8 @@ testRouter.put("/instruct/:testId",uploadTestDetailsInstru)
 testRouter.put("/extra/:testId",updateSpecificTestFields)
 testRouter.delete("/:testId",deleteTest)
 testRouter.post("/single/name",getSingleTestDetail)
-testRouter.post("/detail/:testId",addTestDetails)
+testRouter.get("/service/scan/:slugName",getServiceTestDetail)
+testRouter.post("/add/details/:slug",addTestDetails)
 testRouter.post("/detail/test/:testId",upload.single("file"),uploadExcelForTestDetails)
 testRouter.get("/detail/:testId",getTestDetail)
 testRouter.get("/detail/specific/:slug",getTestSpecificDetail)

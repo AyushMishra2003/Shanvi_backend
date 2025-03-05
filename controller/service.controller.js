@@ -1,3 +1,4 @@
+import { log } from "console";
 import {ServiceModel} from "../models/service.model.js"
 import {ServiceDetailModel} from "../models/servicedetails.model.js";
 import AppError from "../utils/error.utlis.js"
@@ -197,47 +198,34 @@ const getDigitalService = async (req, res, next) => {
 
 const getServiceMoreDetail = async (req, res, next) => {
     try {
-        // Fetch all services and populate serviceDetails
-        const allServices = await ServiceModel.find({}).populate('serviceDetails');
-
+        // Fetch all service details
+        const allServiceDetails = await ServiceDetailModel.find({});
         console.log("Fetching service details...");
 
-        if (!allServices || allServices.length === 0) {
-            return next(new AppError("No services found", 400));
+        if (!allServiceDetails || allServiceDetails.length === 0) {
+            return next(new AppError("No service details found", 400));
         }
 
         // Define the desired serviceDetails sequence
         const desiredSequence = [
             "Digital PET CT Scan",
-			"Digital 3.0 Tesla MRI",
-			"128 Slice High Speed CT Scan",
+            "Digital 3.0 Tesla MRI",
+            "128 Slice High Speed CT Scan",
             "Digital Gamma Scans",
-			 "Digital Mammography",
+            "Digital Mammography",
             "Fetal Medicine",
-			 "Dexa Scan",
-			 "Digital X-Ray",
-			 "Ultrasound (3D/4D/ Dopplers/ TIFFA)",
+            "Dexa Scan",
+            "Digital X-Ray",
+            "Ultrasound (3D/4D/ Dopplers/ TIFFA)",
             "Cardiology",
             "Neurology",
-			"Gastrology",
-			"Medical Oncology",
-			"Therapy",
-			"Interventional Radiology"
-        
+            "Gastrology",
+            "Medical Oncology",
+            "Therapy",
+            "Interventional Radiology"
         ].map(name => name.toLowerCase().trim()); // Normalize sequence names
 
-        // Extract all serviceDetails, ensuring they are valid
-        let allServiceDetails = [];
-        allServices.forEach(service => {
-            if (service.serviceDetails && Array.isArray(service.serviceDetails)) {
-                allServiceDetails.push(...service.serviceDetails);
-            }
-        });
-
-        // Filter out undefined or null serviceDetails
-        // allServiceDetails.forEach(detail => console.log("Checking Detail:", detail.serviceDetailName));
-
-        // Create a mapping of serviceDetails using serviceDetailName
+        // Create a map of service details using serviceDetailName
         const serviceDetailsMap = new Map();
         allServiceDetails.forEach(detail => {
             const normalizedName = detail.serviceDetailName.toLowerCase().trim();
@@ -257,21 +245,22 @@ const getServiceMoreDetail = async (req, res, next) => {
         // Combine ordered and remaining serviceDetails
         const finalServiceDetailsOrder = [...orderedServiceDetails, ...remainingServiceDetails];
 
-        // Debugging: Log the final ordered list
-        console.log("Final Ordered List:");
-        finalServiceDetailsOrder.forEach(detail => console.log(detail.serviceDetailName));
+        // Log the final ordered list
+        console.log("Final Ordered List:", finalServiceDetailsOrder.map(d => d.serviceDetailName));
 
-        // Send the response
+        // Send response
         res.status(200).json({
             success: true,
             message: "Service details sorted successfully.",
             data: finalServiceDetailsOrder,
         });
+
     } catch (error) {
         console.error("Error fetching services:", error);
         return next(new AppError("Internal Server Error", 500));
     }
 };
+
 
 
 
@@ -372,20 +361,17 @@ const addServiceDetail=async(req,res,next)=>{
     try{
 
         const {serviceDetailName,serviceDetail}=req.body
-        const {serviceId}=req.params
+       
+
+ 
+        
 
         if(!serviceDetailName || !serviceDetail){
             return next(new AppError("All Field are Required",400))
         }
 
-        const validService=await ServiceModel.findById(serviceId)
 
-        if(!validService){
-            return next(new AppError("Valid Service is Not Found",404))
-        }
-
-        console.log(validService);
-        
+ 
 
         const addServiceDetail=new ServiceDetailModel({
             serviceDetailName,
@@ -394,29 +380,57 @@ const addServiceDetail=async(req,res,next)=>{
                 public_id:"",
                 secure_url:""
             },
-            serviceId
+            iconPhoto:{
+                public_id:"",
+                secure_url:""
+            },
+       
         })
-   
-        if (req.file) {
-            const result = await cloudinary.v2.uploader.upload(req.file.path, {
-              folder: "lms",
-            });
+
+
+        console.log(req.files);
+        
+
+    
+       
+
+
+        if (req.files) {
+     
             
-            if (result) {
-              (addServiceDetail.servicePhoto.public_id = result.public_id),
-                (addServiceDetail.servicePhoto.secure_url = result.secure_url);
+            if (req.files.servicePhoto) {
+                const result = await cloudinary.v2.uploader.upload(req.files.servicePhoto[0].path, {
+                    folder: "lms"
+                });
+
+                if (result) {
+                    addServiceDetail.servicePhoto.public_id = result.public_id;
+                    addServiceDetail.servicePhoto.secure_url = result.secure_url;
+                }
+             
             }
-            fs.rm(`uploads/${req.file.filename}`);
+
+            if (req.files.iconPhoto) {
+                const iconResult = await cloudinary.v2.uploader.upload(req.files.iconPhoto[0].path, {
+                    folder: "lms/icons"
+                });
+
+                if (iconResult) {
+                    addServiceDetail.iconPhoto.public_id = iconResult.public_id;
+                    addServiceDetail.iconPhoto.secure_url = iconResult.secure_url;
+                }
+        
+            }
         }
 
 
-        console.log((addServiceDetail));
+
         
 
-        await validService.serviceDetails.push(addServiceDetail._id);
+        // await validService.serviceDetails.push(addServiceDetail._id);
 
 
-        await validService.save()
+        // await validService.save()
 
         await addServiceDetail.save()
 
@@ -431,6 +445,8 @@ const addServiceDetail=async(req,res,next)=>{
 
 
     }catch(error){
+        console.log(error);
+        
         return next(new AppError(error.message))
     }
 }
@@ -472,11 +488,13 @@ const updateServiceDetail = async (req, res, next) => {
     try {
       const { serviceDetailId } = req.params; // Extract service detail ID from params
       console.log(serviceDetailId)
+
+
       
       const { serviceDetailName, serviceDetail } = req.body; // Extract fields to update
       // Check if the serviceDetailId is valid
       const all=await ServiceDetailModel.find({})
-    //   console.log(all);
+
       
 
       const existingServiceDetail = await ServiceDetailModel.findById(serviceDetailId);
@@ -487,23 +505,62 @@ const updateServiceDetail = async (req, res, next) => {
       // Update fields only if provided in the request
       if (serviceDetailName) existingServiceDetail.serviceDetailName = serviceDetailName;
       if (serviceDetail) existingServiceDetail.serviceDetail = serviceDetail;
+
+ 
+
+      if (!existingServiceDetail.iconPhoto) {
+        // If iconPhoto field doesn't exist, initialize it
+        existingServiceDetail.iconPhoto = {
+            public_id: "",
+            secure_url: ""
+        };
+    }
+
+
+
+        
+    console.log(req.files);
+    
+
+      
   
       // Handle file upload if a new image is provided
-      if (req.file) {
-        // Upload the new image to Cloudinary
-        const result = await cloudinary.v2.uploader.upload(req.file.path, {
-          folder: "lms",
-        });
-  
-        // Update the servicePhoto field with new image data
-        existingServiceDetail.servicePhoto = {
-          public_id: result.public_id,
-          secure_url: result.secure_url,
-        };
-  
-        // Remove the uploaded file from the server
-        // fs.rmSync(`uploads/${req.file.filename}`);
-      }
+      if (req.files) {
+        if (req.files.servicePhoto) {
+            const result = await cloudinary.v2.uploader.upload(req.files.servicePhoto[0].path, {
+                folder: "lms"
+            });
+
+            console.log(result);
+            
+
+            if (result) {
+                existingServiceDetail.servicePhoto.public_id = result.public_id;
+                existingServiceDetail.servicePhoto.secure_url = result.secure_url;
+                console.log("ho gaya");
+            }
+            // fs.rmSync(req.files.servicePhoto[0].path);
+        }
+
+        if (req.files.iconPhoto) {
+            const iconResult = await cloudinary.v2.uploader.upload(req.files.iconPhoto[0].path, {
+                folder: "lms/icons"
+            });
+
+            console.log(iconResult);
+            
+           
+            
+
+            if (iconResult) {
+                existingServiceDetail.iconPhoto.public_id = iconResult.public_id;
+                existingServiceDetail.iconPhoto.secure_url = iconResult.url;
+                console.log("ho gaya");
+                
+            }
+     
+        }
+    }
   
       // Save the updated document to the database
       await existingServiceDetail.save();
@@ -514,6 +571,8 @@ const updateServiceDetail = async (req, res, next) => {
         data: existingServiceDetail,
       });
     } catch (error) {
+        console.log(error);
+        
       return next(new AppError(error.message, 500));
     }
 };
@@ -534,15 +593,15 @@ const deleteServiceDetail = async (req, res, next) => {
 
         // Find the associated service and remove the serviceDetailId
         const service = await ServiceModel.findById(serviceDetail.serviceId);
-        if (service) {
-            service.serviceDetails = service.serviceDetails.filter((id) => {
-                if (!id) return false; // Skip null/undefined IDs
-                return id.toString() !== serviceDetailId;
-            });
-            await service.save(); // Save the updated service
-        } else {
-            console.warn(`Service not found for serviceDetailId: ${serviceDetailId}`);
-        }
+        // if (service) {
+        //     service.serviceDetails = service.serviceDetails.filter((id) => {
+        //         if (!id) return false; // Skip null/undefined IDs
+        //         return id.toString() !== serviceDetailId;
+        //     });
+        //     await service.save(); // Save the updated service
+        // } else {
+        //     console.warn(`Service not found for serviceDetailId: ${serviceDetailId}`);
+        // }
 
         // Delete the service detail document
         await ServiceDetailModel.findByIdAndDelete(serviceDetailId);

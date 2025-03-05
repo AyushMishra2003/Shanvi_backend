@@ -95,9 +95,9 @@ export const register = async (req, res, next) => {
     let { name, email, password } = req.body;
 
 
-    name = name.trim();
-    email = email.trim().toLowerCase();
-    password = password.trim();
+    // name = name.trim();
+    // email = email.trim().toLowerCase();
+    // password = password.trim();
 
     if (!name || !email || !password) {
       return next(new AppError("All field are Required", 400))
@@ -195,7 +195,9 @@ export const register = async (req, res, next) => {
 export const verifyUser = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("orderDetails");
+  
+    
 
 
     if (!user) return res.status(400).json({ message: 'User not found' });

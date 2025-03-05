@@ -24,6 +24,9 @@ const BannerSchema=new Schema(
         index:{
             type:String,
         
+        },
+        url:{
+          type:String
         }
     },
     {

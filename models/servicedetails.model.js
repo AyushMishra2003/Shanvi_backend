@@ -5,7 +5,7 @@ const serviceDetailSchema = new Schema(
   {
     serviceDetailName: {
       type: String,
-      required: true, // ✅ Required kar diya taaki empty na aaye
+      required: true, 
     },
     serviceDetail: {
       type: String,
@@ -20,10 +20,20 @@ const serviceDetailSchema = new Schema(
         default: "",
       },
     },
+    iconPhoto:{
+      public_id: {
+        type: String,
+        default: "",
+      },
+      secure_url: {
+        type: String,
+        default: "",
+      },
+    },
     serviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Service",
-      required: true,
+      // required: true,
     },
     slug: {
       type: String,
