@@ -507,14 +507,86 @@ const getPackageTag=async(req,res,next)=>{
    }
 }
 
+const editPackageTag = async (req, res, next) => {
+  try {
+      const { id } = req.params; // Tag ID from params
+      const { packageTagName, slug } = req.body; // Package slug from body
+      
+      
+      // Find the package detail by slug
+      const validPackageDetail = await PackageDetail.findOne({ slug });
+      if (!validPackageDetail) {
+          return next(new AppError("Package Details Not Found", 400));
+      }
+
+      // Find the package tag by ID
+      const packageTag = await PackageTagModel.findById(id);
+      if (!packageTag) {
+          return next(new AppError("Package Tag Not Found", 400));
+      }
+
+      // Update packageTag details
+      packageTag.packageTagName = packageTagName || packageTag.packageTagName;
+      packageTag.packageSlugName = validPackageDetail.slug;
+      packageTag.packageId = validPackageDetail._id;
+
+      // Handle file upload if a new icon is provided
+      if (req.file) {
+          if (packageTag.icon.public_id) {
+              await cloudinary.v2.uploader.destroy(packageTag.icon.public_id);
+          }
+          const result = await cloudinary.v2.uploader.upload(req.file.path, {
+              folder: "lms",
+          });
+          packageTag.icon.public_id = result.public_id;
+          packageTag.icon.secure_url = result.secure_url;
+          fs.rm(`uploads/${req.file.filename}`);
+      }
+
+      await packageTag.save();
+
+      res.status(200).json({
+          success: true,
+          message: "Package Tag Updated Successfully",
+          data: packageTag
+      });
+  } catch (error) {
+      return next(new AppError(error.message, 500));
+  }
+};
+
+
+const deletePackageTag=async(req,res,next)=>{
+   try{
+
+    const {id}=req.params
+
+    const validPackageTag=await PackageTagModel.findById(id)
+
+    if(!validPackageTag){
+       return next(new AppError("Package Tag Not Found",404))
+    }
+
+    await PackageTagModel.findByIdAndDelete(id)
+
+    res.status(200).json({
+       success:true,
+       message:"Delete Succesfully"
+    })
+
+   }catch(error){
+     return next(new AppError(error.message,500))
+   }
+}
+
+
+
 
 const getPackageByTag=async(req,res,next)=>{
   try{
     
     const {id}=req.body
     
-    
-    console.log(id);
     
     
     if(!id){
@@ -584,5 +656,7 @@ export {
   getPackageDetailsSlug,
   addPackageTag,
   getPackageTag,
-  getPackageByTag
+  getPackageByTag,
+  deletePackageTag,
+  editPackageTag
 }

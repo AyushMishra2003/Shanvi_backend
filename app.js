@@ -23,10 +23,10 @@ import { ServiceDetailModel, updateServiceDetailSlugs } from "./models/servicede
 import userRoute from "./routes/user.routes.js";
 import { PackageDetail, updatePackageSlugs } from "./models/packageDetails.model.js";
 import { TestDetailModel, updateTestSlugs } from "./models/TestDetail.model.js";
-import modRoute from "./routes/mod.route.js";
+
 import bannerRoute from "./routes/Banner.route.js";
 import { addUtils, getUtils } from "./controller/utlis.controller.js";
-import redisRouter from "./routes/Redis.route.js";
+
 
 
 config();
@@ -86,11 +86,11 @@ app.use("/api/v1/contact",contactRoute)
 app.use("/api/v1/gallery",galleryRoute)
 app.use("/api/v1/pathology",pathologyRouter)
 app.use("/api/v1/user",userRoute)
-app.use("/api/v1/mod/user",modRoute)
+
 app.use("/api/v1/banner",bannerRoute)
 app.post("/api/v1/utlis",addUtils)
 app.get("/api/v1/utlis/:url",getUtils)
-app.use("/api/v1/redis",redisRouter)
+
 
 
 

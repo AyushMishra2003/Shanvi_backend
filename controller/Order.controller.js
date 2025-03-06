@@ -1,3 +1,4 @@
+
 import checkoutModel from "../models/checkout.model.js"
 import User from "../models/user.model.js";
 import sendEmail from "../utils/email.utlis.js"
@@ -169,8 +170,33 @@ const addOrder = async (req, res, next) => {
 };
 
 
+const getOrder=async(req,res,next)=>{
+   try{
+     
+    const allOrder=await checkoutModel.find({})
+
+    if(!allOrder){
+       return next(new AppError("Order Detail Not Found",400))
+    }
+
+
+    res.status(200).json({
+      success:true,
+      message:"All Order-",
+      data:allOrder
+    })
+
+   }catch(error){
+    console.log(error);
+    
+     return next(new AppError(error.message,500))
+   }
+}
+
+
 
 
 export {
-    addOrder
+    addOrder,
+    getOrder
 }

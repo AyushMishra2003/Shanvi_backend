@@ -5,7 +5,7 @@ import PathologyDetail from "../models/pathology.model.js";
 import labTagModel from "../models/LabTestTag.model.js";
 
 // Add Pathology Details
- const addPathologyDetails = async (req, res, next) => {
+const addPathologyDetails = async (req, res, next) => {
   try {
     const {
       pathologyCategory,
@@ -20,7 +20,7 @@ import labTagModel from "../models/LabTestTag.model.js";
     } = req.body;
 
     console.log(req.body);
-    
+
 
     // Parse the `parameters` field if it exists
     const parsedParameters = parameters ? JSON.parse(parameters) : [];
@@ -31,7 +31,7 @@ import labTagModel from "../models/LabTestTag.model.js";
       pathologyDiscount,
       parameterInclude,
       report,
-     
+
       pathologyPhoto: {
         public_id: "",
         secure_url: "",
@@ -68,7 +68,7 @@ import labTagModel from "../models/LabTestTag.model.js";
 };
 
 // Get Pathology Details
- const getPathologyDetails = async (req, res, next) => {
+const getPathologyDetails = async (req, res, next) => {
   try {
 
     const pathologyDetails = await PathologyDetail.find({}, "testDetailName slug testPrice");
@@ -87,7 +87,7 @@ import labTagModel from "../models/LabTestTag.model.js";
   }
 };
 
- const updatePathologyDetails = async (req, res, next) => {
+const updatePathologyDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
     const {
@@ -152,7 +152,7 @@ import labTagModel from "../models/LabTestTag.model.js";
 };
 
 // Delete Pathology Details
- const deletePathologyDetails = async (req, res, next) => {
+const deletePathologyDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -173,47 +173,47 @@ import labTagModel from "../models/LabTestTag.model.js";
   }
 };
 
-const singlePathology=async(req,res,next)=>{
-   try{
-    const {slug}=req.params
+const singlePathology = async (req, res, next) => {
+  try {
+    const { slug } = req.params
 
-    const validPathology=await PathologyDetail.findOne({slug})
+    const validPathology = await PathologyDetail.findOne({ slug })
     console.log(validPathology);
-    
 
-    if(!validPathology){
-         return next(new AppError("Pathology is not Found",400))
+
+    if (!validPathology) {
+      return next(new AppError("Pathology is not Found", 400))
     }
 
     res.status(200).json({
-      success:true,
-      message:"Pathology Details is",
-      data:validPathology
+      success: true,
+      message: "Pathology Details is",
+      data: validPathology
     })
-        
-   }catch(error){
-     return next(new AppError(error.message,500))
-   }
+
+  } catch (error) {
+    return next(new AppError(error.message, 500))
+  }
 }
 
-const addLabTag=async(req,res,next)=>{
-  try{
-    const {slug}=req.params
-    const {labTagName}=req.body
-    const validlabDetail=await PathologyDetail.findOne({slug})
+const addLabTag = async (req, res, next) => {
+  try {
+    const { slug } = req.params
+    const { labTagName } = req.body
+    const validlabDetail = await PathologyDetail.findOne({ slug })
 
-    if(!validlabDetail){
-      return next(new AppError("lab Details Not Found",400))
+    if (!validlabDetail) {
+      return next(new AppError("lab Details Not Found", 400))
     }
 
-    const labTag=new labTagModel({
-        labTagName,
-        labSlugName:validlabDetail.slug,
-        labId:validlabDetail._id
+    const labTag = new labTagModel({
+      labTagName,
+      labSlugName: validlabDetail.slug,
+      labId: validlabDetail._id
     })
 
-    if(!labTag){
-      return next(new AppError("lab Not Added",400))
+    if (!labTag) {
+      return next(new AppError("lab Not Added", 400))
     }
 
     if (req.file) {
@@ -232,48 +232,143 @@ const addLabTag=async(req,res,next)=>{
     await labTag.save()
 
     res.status(200).json({
-      success:true,
-      message:"lab Added Succesfully",
-      data:labTag
+      success: true,
+      message: "lab Added Succesfully",
+      data: labTag
     })
 
 
-  }catch(error){
-    return next(new AppError(error.message,500))
+  } catch (error) {
+    return next(new AppError(error.message, 500))
   }
 }
 
-const getLabTag=async(req,res,next)=>{
- try{  
+const getLabTag = async (req, res, next) => {
+  try {
 
-  const allTag=await labTagModel.find({})
+    const allTag = await labTagModel.find({})
 
-  console.log(allTag);
-  
+    if (!allTag) {
+      return next(new AppError("Not Found", 400))
+    }
 
-  if(!allTag){
-    return next(new AppError("Not Found",400))
+    res.status(200).json({
+      success: true,
+      message: 'All Tag are',
+      data: allTag
+    })
+
+  } catch (error) {
+    return next(new AppError(error.message, 500))
   }
-
-  res.status(200).json({
-    success:true,
-    message:'All Tag are',
-    data:allTag
-  })
-  
- }catch(error){
-  return next(new AppError(error.message,500))
- }
 }
 
+const  deleteLabTag = async (req, res, next) => {
+  try {
+
+    const {id}=req.params
+
+    const validTag=await labTagModel.findById(id)
+
+    if(!validTag){
+       return next(new AppError("Tag is Not Valid",400))
+    }
+
+    await labTagModel.findByIdAndDelete(id)
+
+
+    res.status(200).json({
+      success: true,
+      message: 'tag delete Succesfully',
+    })
+
+  } catch (error) {
+    return next(new AppError(error.message, 500))
+  }
+}
+
+const editLabTag = async (req, res, next) => {
+  try {
+  
 
   
+    const { id } = req.params; // Getting tag ID from params
+    const { labTagName ,slug} = req.body; // Getting new tag name (if provided)
+   
+    console.log(id);
+
+    console.log(labTagName,slug);
+    
+    
+
+
+    const validlabDetail = await PathologyDetail.findOne({ slug })
+    // ✅ Find existing lab tag
+    const existingLabTag = await labTagModel.findById(id);
+    if (!existingLabTag) {
+      return next(new AppError("Lab Tag Not Found", 404));
+    }
+
+    if(!validlabDetail){
+        return next(new AppError("Lab Not Found",404))
+    }
+
+    // ✅ Update tag name if provided
+    if (labTagName) {
+      existingLabTag.labTagName = labTagName;
+    }
+
+    existingLabTag.labSlugName=validlabDetail.slug
+    existingLabTag.labId=validlabDetail._id
+
+    // ✅ If a new icon is uploaded, update Cloudinary
+    if (req.file) {
+      // Delete old icon from Cloudinary if it exists
+      if (existingLabTag.icon.public_id) {
+        await cloudinary.v2.uploader.destroy(existingLabTag.icon.public_id);
+      }
+
+      // Upload new icon
+      const result = await cloudinary.v2.uploader.upload(req.file.path, {
+        folder: "lms",
+      });
+
+      if (result) {
+        existingLabTag.icon.public_id = result.public_id;
+        existingLabTag.icon.secure_url = result.secure_url;
+      }
+
+      // Delete file from local uploads
+      fs.rm(`uploads/${req.file.filename}`);
+    }
+
+    // ✅ Save updated lab tag
+    await existingLabTag.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Lab Tag Updated Successfully",
+      data: existingLabTag,
+    });
+
+  } catch (error) {
+    console.log(error);
+    
+    return next(new AppError(error.message, 500));
+  }
+};
+
+
+
+
 export {
-    addPathologyDetails,
-    getPathologyDetails,
-    deletePathologyDetails,
-    updatePathologyDetails,
-    singlePathology,
-    addLabTag,
-    getLabTag
+  addPathologyDetails,
+  getPathologyDetails,
+  deletePathologyDetails,
+  updatePathologyDetails,
+  singlePathology,
+  addLabTag,
+  getLabTag,
+  deleteLabTag,
+  editLabTag
 }
