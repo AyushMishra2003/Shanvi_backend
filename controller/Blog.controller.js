@@ -6,6 +6,10 @@ import fs from "fs/promises";
 const addBlog=async(req,res,next)=>{
     try{
       const {blogName, blogDetail}=req.body
+
+
+      console.log(req.body);
+      
   
       if(!blogName || !blogDetail){
           return next(new AppError("All field are Required",400))
