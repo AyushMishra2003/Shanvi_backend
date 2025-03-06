@@ -161,7 +161,30 @@ const addCV = async (req, res) => {
 };
 
 
+const deleteCv=async(req,res,next)=>{
+   try{
+       const {id}=req.params
+
+       const checkCv=await CarrerModel.findById(id)
+
+       if(!checkCv){
+         return next(new AppError("Cv Not Found"))
+       }
+
+       await CarrerModel.findByIdAndDelete(id)
+
+       res.status(200).json({
+        success:true,
+        message:"Deleted Succesfully"
+       })
+   }catch(error){
+     return next(new AppError(error.message,500))
+   }
+}
+
+
 export {
     addCV,
-    getCVs
+    getCVs,
+    deleteCv
 }

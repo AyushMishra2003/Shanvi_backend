@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import sendEmail from '../utils/email.utlis.js';
 import bcrypt from 'bcryptjs'
-import { log } from 'console';
+import { error, log } from 'console';
 import validator from 'validator'
 
 // Email Transporter Setup
@@ -504,6 +504,30 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+export const userOrder=async(req,res,next)=>{
+   try{
+
+    const {id}=req.params
+
+    const validUser=await User.findById(id).populate("orderDetails")
+    
+    if(!validUser){
+       return next(new AppError(error.message,500))
+    }
+
+    res.status(200).json({
+       success:true,
+       message:"Order Details",
+       data:validUser
+    })
+
+
+   }catch(error){
+     return next(new AppError(error.message,500))
+   }
+}
 
 
 
