@@ -59,6 +59,8 @@ const addBlog=async(req,res,next)=>{
     try {
       const { id } = req.params;
       const { blogName, blogDetail } = req.body;
+
+      
   
       if (!blogName && !blogDetail && !req.file) {
         return next(new AppError("No fields provided for update", 400));
@@ -91,6 +93,9 @@ const addBlog=async(req,res,next)=>{
       }
   
       await blog.save();
+      
+      console.log(blog);
+      
   
       res.status(200).json({
         success: true,

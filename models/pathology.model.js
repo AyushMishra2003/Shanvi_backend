@@ -3,8 +3,8 @@ import slugify from "slugify";
 
 const pathologyDetailsSchema = new Schema(
   {
-    department: { type: String }, // Fixed spelling
-    subDepartment: { type: String }, // Fixed spelling
+    department: { type: String }, 
+    subDepartment: { type: String }, 
     testDetailName: { type: String },
     category: { type: String },
     testPrice: { type: Number },
@@ -31,21 +31,25 @@ const pathologyDetailsSchema = new Schema(
 );
 
 // Middleware to generate a unique slug
-pathologyDetailsSchema.pre("save", async function (next) {
-  let slug = slugify(this.testDetailName, { lower: true, strict: true });
+// pathologyDetailsSchema.pre("save", async function (next) {
+  
+//   console.log(this);
+  
 
-  let existingTest = await PathologyDetail.findOne({ slug }); // Fixed
-  let count = 1;
+//   let slug = slugify(this.testDetailName, { lower: true, strict: true });
 
-  while (existingTest) {
-    slug = `${slug}-${count}`;
-    existingTest = await PathologyDetail.findOne({ slug }); // Fixed
-    count++;
-  }
+//   let existingTest = await PathologyDetail.findOne({ slug }); // Fixed
+//   let count = 1;
 
-  this.slug = slug;
-  next();
-});
+//   while (existingTest) {
+//     slug = `${slug}-${count}`;
+//     existingTest = await PathologyDetail.findOne({ slug }); // Fixed
+//     count++;
+//   }
+
+//   this.slug = slug;
+//   next();
+// });
 
 // Correct Model Name
 const PathologyDetail = model("PathologyDetail", pathologyDetailsSchema);

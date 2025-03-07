@@ -6,11 +6,11 @@ import fs from "fs/promises";
 
 const addDoctor=async(req,res,next)=>{
   try{
-    const {doctorName, doctorDesination,refService,experience,degree}=req.body
+    const {doctorName, doctorDesination,refService,experience,degree,isDoctor}=req.body
 
-    if(!doctorName || !doctorDesination ){
-        return next(new AppError("All field are Required",400))
-    }
+    // if(!doctorName || !doctorDesination ){
+    //     return next(new AppError("All field are Required",400))
+    // }
 
     const addDoctor=new DoctorModel({
         doctorName,
@@ -21,8 +21,7 @@ const addDoctor=async(req,res,next)=>{
         },
         experience,
         degree,
-        refService,
-        isDoctor:true
+        isDoctor
     })
 
     if(!addDoctor){
@@ -92,6 +91,9 @@ const editDoctor = async (req, res, next) => {
     try {
       const { id } = req.params;
       const { doctorName, doctorDesination,refService } = req.body;
+
+      console.log(req.body);
+      
   
       // if (!doctorName && !doctorDesination && !req.file) {
       //   return next(new AppError("No fields provided for update", 400));
@@ -142,6 +144,9 @@ const editDoctor = async (req, res, next) => {
   const deleteDoctor = async (req, res, next) => {
     try {
       const { id } = req.params;
+
+      console.log(req.params);
+      
   
       const doctor = await DoctorModel.findById(id);
   
@@ -159,6 +164,7 @@ const editDoctor = async (req, res, next) => {
       res.status(200).json({
         success: true,
         message: "Doctor deleted successfully",
+        
       });
     } catch (error) {
       return next(new AppError(error.message, 500));

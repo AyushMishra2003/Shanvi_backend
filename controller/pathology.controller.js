@@ -3,56 +3,71 @@ import cloudinary from "cloudinary";
 import fs from "fs/promises";
 import PathologyDetail from "../models/pathology.model.js";
 import labTagModel from "../models/LabTestTag.model.js";
+import slugify from "slugify";
 
 // Add Pathology Details
 const addPathologyDetails = async (req, res, next) => {
   try {
     const {
-      pathologyCategory,
-      pathologyRate,
-      pathologyDiscount,
-      parameterInclude,
-      report,
+      paramterInclude,
+      testRequirement,
+      reportTime,
       parameters,
-      pathologyName,
+      testDetailName,
+      fasting,
       pathologyOverview,
       pathologyParamterDetails,
+      testInstructionsEng,
+      testInstructionsHin,
+      testDetails,
+      age,
+      reportConsuling,
+      sampleCollection,
+      testPrice,
+      recommedFor
     } = req.body;
+
+    console.log(testDetailName);
+    
 
     console.log(req.body);
 
 
     // Parse the `parameters` field if it exists
-    const parsedParameters = parameters ? JSON.parse(parameters) : [];
+    // const parsedParameters = parameters ? JSON.parse(parameters) : [];
+      let slug = slugify(testDetailName, { lower: true, strict: true });
 
     const newPathologyDetail = new PathologyDetail({
-      pathologyCategory,
-      pathologyRate,
-      pathologyDiscount,
-      parameterInclude,
-      report,
-
-      pathologyPhoto: {
-        public_id: "",
-        secure_url: "",
-      },
-      pathologyName,
-      pathologyOverview,
-      pathologyParamterDetails,
+      testDetailName,
+      reportTime,
+      fasting,
+      testDetails1:testInstructionsEng,
+      testDetails2:testInstructionsHin,
+      testRequirement1:testDetails,
+      age,
+      reportConsuling,
+      reportTime,
+      sampleCollection,
+      testPrice,
+      paramterInclude,
+      slug,
+      recommedFor
     });
 
-    // Handle file upload to Cloudinary
-    if (req.file) {
-      const result = await cloudinary.v2.uploader.upload(req.file.path, {
-        folder: "pathologies",
-      });
+    
 
-      if (result) {
-        newPathologyDetail.pathologyPhoto.public_id = result.public_id;
-        newPathologyDetail.pathologyPhoto.secure_url = result.secure_url;
-      }
-      await fs.unlink(req.file.path); // Remove the uploaded file from local storage
-    }
+    // // Handle file upload to Cloudinary
+    // if (req.file) {
+    //   const result = await cloudinary.v2.uploader.upload(req.file.path, {
+    //     folder: "pathologies",
+    //   });
+
+    //   if (result) {
+    //     newPathologyDetail.pathologyPhoto.public_id = result.public_id;
+    //     newPathologyDetail.pathologyPhoto.secure_url = result.secure_url;
+    //   }
+    //   await fs.unlink(req.file.path); // Remove the uploaded file from local storage
+    // }
 
     await newPathologyDetail.save();
 
@@ -71,7 +86,10 @@ const addPathologyDetails = async (req, res, next) => {
 const getPathologyDetails = async (req, res, next) => {
   try {
 
-    const pathologyDetails = await PathologyDetail.find({}, "testDetailName slug testPrice");
+    const pathologyDetails = await PathologyDetail.find({});
+
+    // const pathologyDetails = await PathologyDetail.find({}, "testDetailName slug testPrice");
+
     if (!pathologyDetails) {
       return next(new AppError("Pathology details not found", 404));
     }
@@ -91,65 +109,56 @@ const updatePathologyDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
     const {
-      pathologyName,
-      pathologyCategory,
-      pathologyRate,
-      pathologyDiscount,
-      parameterInclude,
-      report,
-      pathologysParameter,
-      pathologyOverview,
-      pathologyParamterDetails,
+      paramterInclude,
+      testRequirement,
+      reportTime,
+      parameters,
+      testDetailName,
+      fasting,
+      testInstructionsEng,
+      testInstructionsHin,
+      testDetails,
+      age,
+      reportConsuling,
+      sampleCollection,
+      testPrice,
+      recommedFor
     } = req.body;
 
-    const existingPathologyDetail = await PathologyDetail.findById(id);
-    if (!existingPathologyDetail) {
-      return next(new AppError("Pathology detail not found", 404));
+    // Find existing test details
+    const existingTestDetail = await PathologyDetail.findById(id);
+    if (!existingTestDetail) {
+      return next(new AppError("Test details not found", 404));
     }
 
     // Update fields if provided
-    if (pathologyName) existingPathologyDetail.pathologyName = pathologyName;
-    if (pathologyCategory) existingPathologyDetail.pathologyCategory = pathologyCategory;
-    if (pathologyRate) existingPathologyDetail.pathologyRate = pathologyRate;
-    if (pathologyDiscount) existingPathologyDetail.pathologyDiscount = pathologyDiscount;
-    if (parameterInclude) existingPathologyDetail.parameterInclude = parameterInclude;
-    if (report) existingPathologyDetail.report = report;
-    if (pathologyOverview) existingPathologyDetail.pathologyOverview = pathologyOverview;
-    if (pathologyParamterDetails) existingPathologyDetail.pathologyParamterDetails = pathologyParamterDetails;
-
-    // Update pathologysParameter if provided
-    if (Array.isArray(pathologysParameter)) {
-      existingPathologyDetail.pathologysParamter = pathologysParameter.map(item => ({
-        parameterName: item?.parameterName,
-        description: item?.description,
-      }));
-    }
-
-    // Handle file upload
-    if (req.file) {
-      const result = await cloudinary.v2.uploader.upload(req.file.path, {
-        folder: "pathologies",
-      });
-
-      if (result) {
-        existingPathologyDetail.pathologyPhoto.public_id = result.public_id;
-        existingPathologyDetail.pathologyPhoto.secure_url = result.secure_url;
-      }
-      await fs.unlink(req.file.path); // Remove the uploaded file from local storage
-    }
-
-    await existingPathologyDetail.save();
+    if (testDetailName) existingTestDetail.testDetailName = testDetailName;
+    if (reportTime) existingTestDetail.reportTime = reportTime;
+    if (fasting) existingTestDetail.fasting = fasting;
+    if (testInstructionsEng) existingTestDetail.testDetails1 = testInstructionsEng;
+    if (testInstructionsHin) existingTestDetail.testDetails2 = testInstructionsHin;
+    if (testDetails) existingTestDetail.testRequirement1 = testDetails;
+    if (age) existingTestDetail.age = age;
+    if (reportConsuling) existingTestDetail.reportConsuling = reportConsuling;
+    if (sampleCollection) existingTestDetail.sampleCollection = sampleCollection;
+    if (testPrice) existingTestDetail.testPrice = testPrice;
+    if (paramterInclude) existingTestDetail.paramterInclude = paramterInclude;
+    if (recommedFor) existingTestDetail.recommedFor = recommedFor;
+    
+    // Save updated details
+    await existingTestDetail.save();
 
     res.status(200).json({
       success: true,
-      message: "Pathology detail updated successfully",
-      data: existingPathologyDetail,
+      message: "Test details updated successfully",
+      data: existingTestDetail,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error updating test details:", error);
     next(new AppError(error.message, 500));
   }
 };
+
 
 // Delete Pathology Details
 const deletePathologyDetails = async (req, res, next) => {
