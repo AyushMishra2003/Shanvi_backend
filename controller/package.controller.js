@@ -5,6 +5,7 @@ import AppError from "../utils/error.utlis.js"
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
 import PackageTagModel from "../models/PackagTag.model.js";
+import slugify from "slugify";
 
 
 const addPackage = async (req, res, next) => {
@@ -134,7 +135,11 @@ const deletePackage = async (req, res, next) => {
 const addPackageDetails = async (req, res, next) => {
   try {
 
-    const { packageCategory, packageRate, packageDiscount, parameterInclude, report, parameters, packageName, packageOverview, packageParamterDetails } = req.body
+    const { packageCategory, packageRate, parameterInclude, parameters, packageName, packageParamterDetails,age,fasting, instructionEnglish, instructionHindi,  packageDiscount, packageOverview, recommededfor,report} = req.body
+
+
+    console.log(req.body);
+    
 
     const { packageId } = req.params
 
@@ -148,20 +153,7 @@ const addPackageDetails = async (req, res, next) => {
       });
 
 
-    // const validPackages=await PackageModel.findById(packageId)
-
-    // if(!validPackages){
-    //     return next(new AppError("Packages not Found",400))
-    // }
-
-    // const formattedPackages = Array.isArray(packagesParameter)
-    // ? packagesParameter.map((item) => ({
-    //     parameterName: item?.parameterName,
-    //     description: item?.content,
-    //   }))
-    // : [];
-
-    const parsedParameters = JSON.parse(parameters);
+    let slug = slugify(packageName, { lower: true, strict: true });
 
     const addPackageDetail = new PackageDetail({
       packageCategory,
@@ -169,10 +161,6 @@ const addPackageDetails = async (req, res, next) => {
       packageDiscount,
       parameterInclude,
       report,
-      packagesParamter: parsedParameters.map(param => ({
-        parameterName: param.parameterName,
-        description: param.description,
-      })),
       packagePhoto: {
         public_id: "",
         secure_url: ""
@@ -180,10 +168,12 @@ const addPackageDetails = async (req, res, next) => {
       packageName,
       packageOverview,
       packageId, // Link to Package,
-      packageParamterDetails
+      packageParamterDetails,
+      instructionEnglish,
+      instructionHindi,
+      slug
     })
 
-    console.log(addPackageDetail);
 
 
     if (req.file) {
@@ -291,35 +281,31 @@ const getPackageDetailsSlug = async (req, res, next) => {
 const updatePackageDetails = async (req, res, next) => {
   try {
     const { packageDetailId } = req.params;
-    const { packageName, packageCategory, packageRate, packageDiscount, parameterInclude, report, packagesParameter, packageOverview } = req.body;
+    const { packageCategory, packageRate, parameterInclude, packageName, packageParamterDetails, instructionEnglish, instructionHindi, packageDiscount, packageOverview, report } = req.body;
 
-
-
+    console.log(req.body);
 
     // Step 1: Find the existing PackageDetail by ID
-    const existingPackageDetail = await PackageDetail.findById(packageDetailId);
+    let existingPackageDetail = await PackageDetail.findById(packageDetailId);
     if (!existingPackageDetail) {
       return next(new AppError("Package Detail not found", 404));
     }
 
-    // Step 2: Update the fields (if they are provided in the request)
+    // Generate slug only if packageName is updated
+    let slug = packageName ? slugify(packageName, { lower: true, strict: true }) : existingPackageDetail.slug;
 
-    if (packageName) existingPackageDetail.packageName = packageName;
-    if (packageCategory) existingPackageDetail.packageCategory = packageCategory;
-    if (packageRate) existingPackageDetail.packageRate = packageRate;
-    if (packageDiscount) existingPackageDetail.packageDiscount = packageDiscount;
-    if (parameterInclude) existingPackageDetail.parameterInclude = parameterInclude;
-    if (report) existingPackageDetail.report = report;
-
-    if (packageOverview) existingPackageDetail.packageOverview = packageOverview
-
-    // If `packagesParameter` is provided, format it and update it
-    if (Array.isArray(packagesParameter)) {
-      existingPackageDetail.packagesParamter = packagesParameter.map((item) => ({
-        parameterName: item?.parameterName,
-        description: item?.content,
-      }));
-    }
+    // Step 2: Update fields dynamically
+    existingPackageDetail.packageCategory = packageCategory || existingPackageDetail.packageCategory;
+    existingPackageDetail.packageRate = packageRate || existingPackageDetail.packageRate;
+    existingPackageDetail.parameterInclude = parameterInclude || existingPackageDetail.parameterInclude;
+    existingPackageDetail.packageName = packageName || existingPackageDetail.packageName;
+    existingPackageDetail.packageParamterDetails = packageParamterDetails || existingPackageDetail.packageParamterDetails;
+    existingPackageDetail.instructionEnglish = instructionEnglish || existingPackageDetail.instructionEnglish;
+    existingPackageDetail.instructionHindi = instructionHindi || existingPackageDetail.instructionHindi;
+    existingPackageDetail.packageDiscount = packageDiscount || existingPackageDetail.packageDiscount;
+    existingPackageDetail.packageOverview = packageOverview || existingPackageDetail.packageOverview;
+    existingPackageDetail.report = report || existingPackageDetail.report;
+    existingPackageDetail.slug = slug;
 
     // Step 3: Handle file upload (if a new file is uploaded)
     if (req.file) {
@@ -327,11 +313,11 @@ const updatePackageDetails = async (req, res, next) => {
         folder: "lms",
       });
 
-      // If file upload was successful, update the package photo details
       if (result) {
         existingPackageDetail.packagePhoto.public_id = result.public_id;
         existingPackageDetail.packagePhoto.secure_url = result.secure_url;
       }
+
       // Remove the uploaded file after uploading to Cloudinary
       fs.rm(`uploads/${req.file.filename}`);
     }
@@ -345,19 +331,20 @@ const updatePackageDetails = async (req, res, next) => {
       message: "Package Detail updated successfully",
       data: existingPackageDetail,
     });
+
   } catch (error) {
     console.error(error);
-    return next(new AppError("Error updating Package Detail", 500));
+    return next(new AppError(error.message || "Error updating Package Detail", 500));
   }
 };
+
 
 
 const deletePackageDetails = async (req, res, next) => {
   try {
     const { packageDetailId } = req.params; // ID of the PackageDetail to delete
 
-    console.log("i am in");
-
+  
 
     // Find the PackageDetail by ID
     const packageDetail = await PackageDetail.findById(packageDetailId);
@@ -366,20 +353,8 @@ const deletePackageDetails = async (req, res, next) => {
       return next(new AppError("Package Detail not found", 404));
     }
 
-    const { packageId } = packageDetail; // Get the associated packageId
+    await PackageDetail.findByIdAndDelete(packageDetailId)
 
-    // Remove the PackageDetail document
-    await PackageDetail.findByIdAndDelete(packageDetailId);
-
-    // Find the associated Package and remove the reference to this PackageDetail
-    const validPackage = await PackageModel.findById(packageId);
-
-    if (validPackage) {
-      validPackage.packageDetails = validPackage.packageDetails.filter(
-        (detailId) => detailId.toString() !== packageDetailId
-      );
-      await validPackage.save(); // Save the updated Package
-    }
 
     res.status(200).json({
       success: true,

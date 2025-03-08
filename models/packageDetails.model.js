@@ -26,13 +26,13 @@ const packageDetailsSchema = new Schema(
       type: Number,
     },
     packageDiscount: {
-      type: Number,
+      type: String,
     },
     parameterInclude: {
-      type: Number,
+      type: String,
     },
     report: {
-      type: Number,
+      type: String,
     },
     packagesParamter: [
       {

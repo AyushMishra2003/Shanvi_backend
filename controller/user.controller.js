@@ -582,3 +582,31 @@ export const isLogin = async (req, res, next) => {
     return next(new AppError(error.message, 500));
   }
 };
+
+export const updateUser = async (req, res, next) => {
+  try {
+      const { id } = req.params;
+
+      // Check if user exists
+      const validUser = await User.findById(id);
+      if (!validUser) {
+          return next(new AppError("User not found", 400));
+      }
+
+      // Update user and return updated data
+      const updatedUser = await User.findByIdAndUpdate(id, req.body, { 
+          new: true, // Return updated document
+          runValidators: true // Validate before update
+      });
+
+      res.status(200).json({
+          success: true,
+          message: "User updated successfully",
+          data: updatedUser
+      });
+
+  } catch (error) {
+      return next(new AppError(error.message, 500));
+  }
+};
+
