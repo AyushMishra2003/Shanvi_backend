@@ -188,6 +188,8 @@ const getSingleTestDetail = async (req, res, next) => {
     try {
 
         const { serviceName } = req.body;
+        console.log("service name is ",serviceName);
+        
         const decodedServiceName = decodeURIComponent(serviceName);
 
         const regexCategory = new RegExp(decodedServiceName.replace(/-/g, ''), 'i');
@@ -246,18 +248,25 @@ const getServiceTestDetail = async (req, res, next) => {
     try {
         
         const {slugName}=req.params
+   
+        
         const validService=await ServiceDetailModel.findOne({slug:slugName})
 
         if(!validService){
             return next(new AppError("Service is Not Valid",400))
         }
 
+ 
+
 
         
-        const regexCategory = new RegExp(validService?.serviceDetailName.replace(/-/g, ''), 'i');
+        // const regexCategory = new RegExp(validService?.serviceDetailName.replace(/-/g, ''), 'i');
+
+        // console.log(regexCategory);
+        
 
         const details = await TestDetailModel.find({ 
-            category: { $regex: regexCategory } 
+            category: slugName 
         });
 
 
@@ -338,13 +347,6 @@ const updateTest = async (req, res, next) => {
         return next(new AppError(error.message, 500));
     }
 }
-
-
-
-
-
-
-
 
 const deleteTest = async (req, res, next) => {
     try {
@@ -439,7 +441,7 @@ const addTestDetails = async (req, res, next) => {
             fasting,
             paramterInclude,
             recommedFor,
-            category:validService.serviceDetailName,
+            category:validService.slug,
             departement:validService.serviceDetailName,
             refService:validService.serviceDetailName,
             sampleCollection,
@@ -477,34 +479,7 @@ const addTestDetails = async (req, res, next) => {
     }
 }
 
-// const getTestDetail=async(req,res,next)=>{
-//     try{
 
-//         const {testId}=req.params
-
-
-//         const validTest=await TestModel.findById(testId)
-
-//         if(!validTest){
-//             return next(new AppError("Test Not Found",400))
-//         }
-
-//         const testDetail=await TestDetailModel.find({testId})
-
-//         if(!testDetail){
-//             return next(new AppError("Test Details not Found,Something went Wrong",400))
-//         }
-
-//         res.status(200).json({
-//             success:true,
-//             message:"ALL Test Detail are:-",
-//             data:testDetail
-//         })
-
-//     }catch(error){
-//         return next(new AppError(error.message,500))
-//     }
-// }
 
 const getTestDetail = async (req, res, next) => {
     try {
@@ -544,37 +519,27 @@ const getTestDetail = async (req, res, next) => {
 
 const updateTestDetails = async (req, res, next) => {
     try {
-        const { testDetailId } = req.params; // Extract TestDetail ID from params
-        const updateData = req.body; // Fields to be updated
+        const { testDetailId } = req.params;
+        console.log(req.params);
+        
+        const updateData = req.body;
 
-        console.log(`Update data for TestDetail ID ${testDetailId}:`, updateData);
+        console.log(updateData);
+        
 
-        // Find the TestDetail document by ID
-        const testDetail = await TestDetailModel.findById(testDetailId);
+        // Find and update the TestDetail document in one step
+        const testDetail = await TestDetailModel.findByIdAndUpdate(
+            testDetailId, 
+            updateData, 
+            { new: true, runValidators: true } // Returns updated document & runs validation
+        );
+
+        console.log(testDetail);
+        
 
         if (!testDetail) {
             return next(new AppError("Test Detail not found", 404));
         }
-
-        // Update the fields in the TestDetail document
-        // for (const key in updateData) {
-        //     if (updateData.hasOwnProperty(key)) {
-        //         testDetail[key] = updateData[key];
-        //     }
-        // }
-
-
-        testDetail.testDetailName = updateData?.testDetailName
-        testDetail.testPrice = updateData?.testPrice
-        testDetail.testDetails1 = updateData?.testDetails1
-        testDetail.testDetails2 = updateData?.testDetails2
-        testDetail.testRequirement1 = updateData?.testRequirement1
-
-        console.log(testDetail);
-
-
-        // Save the updated document
-        await testDetail.save();
 
         res.status(200).json({
             success: true,
@@ -586,6 +551,9 @@ const updateTestDetails = async (req, res, next) => {
         return next(new AppError(error.message, 500));
     }
 };
+
+
+
 
 const deleteTestDetail = async (req, res, next) => {
     try {
@@ -682,197 +650,6 @@ const deleteTestSpecificDetail = async (req, res, next) => {
     }
 }
 
-
-// const uploadExcelForTestDetails = async (req, res, next) => {
-
-//     try {
-//         const { testId } = req.params;
-
-//         if (!req.file) {
-//             return next(new AppError("No file uploaded", 400));
-//         }
-
-//         const validTest = await TestModel.findById(testId);
-
-
-//         if (!validTest) {
-//             return next(new AppError("Invalid Test ID. Test not found.", 404));
-//         }
-
-//         const filePath = req.file.path;
-//         const workbook = xlsx.readFile(filePath);
-//         const sheetName = workbook.SheetNames[0];
-//         const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-
-//         const cleanedData = sheetData.slice(1).map(row => row.map(cell => cell?.toString().trim())).filter(row => row.length > 0);
-
-
-
-//         const addedTestDetails = [];
-
-
-
-//         // const updatedValues = {
-//         //     paramterInclude: "Depends on test",
-//         //     sampleCollection: "Available",
-//         //     reportConsuling: "Available",
-//         //     reportTime: "Same Day to 48 Hours",
-//         //     fasting: "Consult your doctor",
-//         //     recommedFor: "Male,Female",
-//         //     age: "All Age Groups",
-//         // };
-
-//         // const updatedValues = {             
-//         //     paramterInclude: "On Type",             
-//         //     sampleCollection: "Required",             
-//         //     reportConsuling: "Available",             
-//         //     reportTime: "Depends",             
-//         //     fasting: "Consult your doctor",             
-//         //     recommedFor: "Male, Female",             
-//         //     age: "All Ages",         
-//         // };  
-//         const updatedValues = {
-//             paramterInclude: "Depends on Diagnosis",
-//             sampleCollection: "Required for Tests",
-//             reportConsuling: "Available",
-//             reportTime: "Varies Based on Tests",
-//             fasting: "May be required for certain tests",
-//             recommedFor: "Male, Female",
-//             age: "All Ages",
-//         };
-        
-//         const testRequirement1 = `<p class="ql-align-justify">
-//             Medical Oncology is a branch of medicine that focuses on the diagnosis, treatment, and management of cancer using chemotherapy, targeted therapy, immunotherapy, and hormone therapy. It involves a multidisciplinary approach, including coordination with surgical and radiation oncology.
-//         </p>`;
-        
-//         const testDetails1 = `<ul> 
-//             <li class="ql-align-justify">Patients should inform their doctor about any ongoing medications, allergies, or pre-existing conditions before undergoing cancer treatment.</li>
-//             <li class="ql-align-justify">Certain tests may require fasting. Follow specific instructions given by your oncologist.</li>
-//             <li class="ql-align-justify">Chemotherapy or targeted therapy may have side effects. Discuss potential side effects and management strategies with your doctor.</li>
-//             <li class="ql-align-justify">Patients undergoing immunotherapy should be aware of possible immune-related reactions and report any unusual symptoms to their doctor immediately.</li>
-//             <li class="ql-align-justify">Blood tests, biopsies, and imaging tests such as PET-CT or MRI may be required for diagnosis and treatment monitoring.</li>
-//             <li class="ql-align-justify">Maintain a healthy diet and hydration during treatment as per your doctor's recommendations.</li>
-//             <li class="ql-align-justify">Carry all previous medical records, pathology reports, imaging results (CT, MRI, PET-CT), and doctor's prescriptions.</li>
-//             <li class="ql-align-justify">Reach the hospital or cancer center at least 30 minutes before your scheduled appointment.</li>
-//             <li class="ql-align-justify">Please carry identification proof such as an Aadhar card, PAN card, etc.</li>
-//         </ul>`;
-        
-//         const testDetails2 = `<ul> 
-//             <li class="ql-align-justify">मरीज को कैंसर उपचार से पहले अपनी मौजूदा दवाओं, एलर्जी या पूर्व-मौजूदा स्थितियों के बारे में डॉक्टर को सूचित करना चाहिए।</li>
-//             <li class="ql-align-justify">कुछ परीक्षणों के लिए उपवास आवश्यक हो सकता है। अपने ऑन्कोलॉजिस्ट के निर्देशों का पालन करें।</li>
-//             <li class="ql-align-justify">कीमोथेरेपी या टार्गेटेड थेरेपी के दुष्प्रभाव हो सकते हैं। संभावित दुष्प्रभावों और उनके प्रबंधन के बारे में अपने डॉक्टर से चर्चा करें।</li>
-//             <li class="ql-align-justify">इम्यूनोथेरेपी से गुजरने वाले मरीजों को संभावित इम्यून-सम्बंधित प्रतिक्रियाओं के बारे में जागरूक रहना चाहिए और किसी भी असामान्य लक्षण की तुरंत डॉक्टर को जानकारी देनी चाहिए।</li>
-//             <li class="ql-align-justify">रक्त परीक्षण, बायोप्सी और इमेजिंग परीक्षण जैसे कि PET-CT या MRI निदान और उपचार निगरानी के लिए आवश्यक हो सकते हैं।</li>
-//             <li class="ql-align-justify">उपचार के दौरान अपने डॉक्टर की सिफारिशों के अनुसार स्वस्थ आहार और जलयोजन बनाए रखें।</li>
-//             <li class="ql-align-justify">सभी पिछले चिकित्सा रिकॉर्ड, पैथोलॉजी रिपोर्ट, इमेजिंग परिणाम (CT, MRI, PET-CT) और डॉक्टर के प्रिस्क्रिप्शन साथ लाएँ।</li>
-//             <li class="ql-align-justify">अपनी निर्धारित नियुक्ति से कम से कम 30 मिनट पहले अस्पताल या कैंसर केंद्र में पहुँचें।</li>
-//             <li class="ql-align-justify">कृपया आधार कार्ड, पैन कार्ड आदि जैसे पहचान प्रमाण साथ रखें।</li>
-//         </ul>`;
-        
-
-//         for (const row of cleanedData) {
-//             const department = row[0];
-//             const subDepartment = row[1];
-//             const testName = row[2];
-//             const baseRate = row[3];
-        
-//             if (!testName || !baseRate) {
-//                 console.log("Skipping row due to missing data:", row);
-//                 continue;
-//             }
-        
-//             const parsedBaseRate = parseFloat(baseRate);
-//             if (isNaN(parsedBaseRate)) {
-//                 console.log("Skipping row due to invalid Base Rate:", row);
-//                 continue;
-//             }
-        
-//             const slugifiedTestName = slugify(testName, { lower: true, strict: true });
-        
-//             // **Check if testDetail already exists**
-//             let testDetail = await TestDetailModel.findOne({ slug: slugifiedTestName });
-        
-//             if (testDetail) {
-//                 // **If exists, update it**
-//                 testDetail = await TestDetailModel.findOneAndUpdate(
-//                     { slug: slugifiedTestName },
-//                     {
-//                         departement: department,
-//                         Sub_Department: subDepartment,
-//                         testDetailName: testName,
-//                         category: validTest.testName,
-//                         testPrice: parsedBaseRate,
-//                         testDetails1: testDetails1,
-//                         testDetails2: testDetails2,
-//                         testRequirement1: testRequirement1,
-//                         testRequirement2: "",
-//                         testDeliver1: "",
-//                         testDeliver2: "",
-//                         testDiscount: 0,
-//                         sampleCollection: updatedValues.sampleCollection,
-//                         reportConsuling: updatedValues.reportConsuling,
-//                         reportTime: updatedValues.reportTime,
-//                         fasting: updatedValues.fasting,
-//                         recommedFor: updatedValues.recommedFor,
-//                         age: updatedValues.age,
-//                         paramterInclude: updatedValues.paramterInclude,
-//                         testId,
-//                     },
-//                     { new: true } // **Returns the updated document**
-//                 );
-//             } else {
-//                 // **If not found, create a new record**
-//                 testDetail = new TestDetailModel({
-//                     departement: department,
-//                     Sub_Department: subDepartment,
-//                     testDetailName: testName,
-//                     category: validTest.testName,
-//                     testPrice: parsedBaseRate,
-//                     testDetails1: testDetails1,
-//                     testDetails2: testDetails2,
-//                     testRequirement1: testRequirement1,
-//                     testRequirement2: "",
-//                     testDeliver1: "",
-//                     testDeliver2: "",
-//                     testDiscount: 0,
-//                     sampleCollection: updatedValues.sampleCollection,
-//                     reportConsuling: updatedValues.reportConsuling,
-//                     reportTime: updatedValues.reportTime,
-//                     fasting: updatedValues.fasting,
-//                     recommedFor: updatedValues.recommedFor,
-//                     age: updatedValues.age,
-//                     paramterInclude: updatedValues.paramterInclude,
-//                     testId,
-//                     slug: slugifiedTestName,
-//                 });
-        
-//                 await testDetail.save();
-//                 validTest.testDetail.push(testDetail._id);
-//                 addedTestDetails.push(testDetail);
-//             }
-//         }
-        
-//         await validTest.save();
-        
-//         res.status(200).json({
-//             success: true,
-//             message: "Test details uploaded successfully from Excel (Overwritten if existing).",
-//             data: addedTestDetails,
-//         });
-        
-//         // }   
-//         await validTest.save();
-
-//         res.status(200).json({
-//             success: true,
-//             message: "Test details uploaded successfully from Excel (Overwritten if existing).",
-//             data: addedTestDetails,
-//         });
-//     } catch (error) {
-//         console.log(error);
-//         return next(new AppError(error.message, 500));
-//     }
-// };
 
 
 const uploadExcelForTestDetails = async (req, res, next) => {
@@ -1215,6 +992,60 @@ const updateSpecificTestFields = async (req, res, next) => {
     }
 };
 
+const updateSlugDetails = async (req, res,next) => {
+    try {
+        const { oldSlug,id } = req.body;
+        console.log(req.body);
+        
+
+        const validService=await ServiceDetailModel.findById(id)
+        
+        if(!validService){
+             return next(new AppError("Service is not Valid"))
+        }
+
+
+        
+
+       const details = await TestDetailModel.find({category:oldSlug})
+
+        
+    //    const details=await TestDetailModel.find({slug:oldSlug})
+
+    //    console.log(details);
+       
+
+
+       
+
+        const updatedTests = await TestDetailModel.updateMany(
+            { category: oldSlug },  // Find all test details with the old slug
+            { 
+                $set: { 
+                    category: validService.slug, 
+                    departement: validService.serviceDetailName, 
+                } 
+            }
+        );
+
+    
+        
+
+        res.status(200).json({ 
+            message: "Test details updated successfully", 
+            modifiedCount: updatedTests.modifiedCount ,
+            data:updatedTests
+        });
+
+    } catch (error) {
+
+        console.log(error);
+        
+        res.status(500).json({ error: "Something went wrong", details: error.message });
+    }
+};
+
+
 
 
 
@@ -1234,5 +1065,6 @@ export {
     uploadTestDetailsInstru,
     updateSpecificTestFields,
     deleteTestSpecificDetail,
-    getServiceTestDetail
+    getServiceTestDetail,
+    updateSlugDetails
 }

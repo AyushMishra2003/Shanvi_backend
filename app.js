@@ -26,6 +26,7 @@ import { TestDetailModel, updateTestSlugs } from "./models/TestDetail.model.js";
 
 import bannerRoute from "./routes/Banner.route.js";
 import { addUtils, getUtils } from "./controller/utlis.controller.js";
+import { updateSlugDetails } from "./controller/test.controller.js";
 
 
 
@@ -91,6 +92,8 @@ app.use("/api/v1/banner",bannerRoute)
 app.post("/api/v1/utlis",addUtils)
 app.get("/api/v1/utlis/:url",getUtils)
 
+
+app.post("/test/updated",updateSlugDetails)
 
 
 

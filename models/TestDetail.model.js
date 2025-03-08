@@ -10,6 +10,9 @@ const TestDetailSchema=new Schema(
          Sub_Department:{
              type:String
          },
+         service:{
+            type:String
+         },
          testDetailName:{
             type:String
          },
