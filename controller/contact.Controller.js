@@ -77,7 +77,32 @@ const getContact=async(req,res,next)=>{
 }
 
 
+const deleteContact=async(req,res,next)=>{
+     try{
+
+        const {id}=req.params
+
+        const validContact=await ContactModel.findById(id)
+
+        if(!validContact){
+             return next(new AppError("Contact is Not Valid",400))
+        }
+
+        await ContactModel.findByIdAndDelete(id)
+
+        res.status(200).json({
+            success:true,
+            message:"Contact Delete Succesfully"
+        })
+
+     }catch(error){
+         return next(new AppError(error.message,500))
+     }
+}
+
+
 export {
     addContact,
-    getContact
+    getContact,
+    deleteContact
 }
