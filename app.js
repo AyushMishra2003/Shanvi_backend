@@ -23,10 +23,10 @@ import { ServiceDetailModel, updateServiceDetailSlugs } from "./models/servicede
 import userRoute from "./routes/user.routes.js";
 import { PackageDetail, updatePackageSlugs } from "./models/packageDetails.model.js";
 import { TestDetailModel, updateTestSlugs } from "./models/TestDetail.model.js";
-
 import bannerRoute from "./routes/Banner.route.js";
 import { addUtils, getUtils } from "./controller/utlis.controller.js";
 import { updateSlugDetails } from "./controller/test.controller.js";
+import MessageModel from "./models/Message.model.js";
 
 
 
@@ -91,6 +91,37 @@ app.use("/api/v1/user",userRoute)
 app.use("/api/v1/banner",bannerRoute)
 app.post("/api/v1/utlis",addUtils)
 app.get("/api/v1/utlis/:url",getUtils)
+
+
+app.get("/api/v1/message", async (req, res) => {
+  try {
+    let messageDoc = await MessageModel.findOne();
+
+    if (!messageDoc) {
+      messageDoc = new MessageModel({ messages: [], tag: 0 });
+    }
+
+    // ✅ Tag count increase
+    messageDoc.tag += 1;
+    
+    // ✅ Save updated data
+    await messageDoc.save();
+
+    // ✅ Get `io` instance from app
+    const io = req.app.get("io"); 
+    io.emit("updateTag", messageDoc.tag); // 🔥 Emit new tag count to all clients
+
+    // ✅ Send response
+    res.json({
+      tag: messageDoc.tag,
+      messages: messageDoc.messages || [],
+    });
+
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+});
 
 
 app.post("/test/updated",updateSlugDetails)

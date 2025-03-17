@@ -184,9 +184,10 @@ const getSingleTest = async (req, res, next) => {
     }
 };
 
+
+
 const getSingleTestDetail = async (req, res, next) => {
     try {
-
         const { serviceName } = req.body;
         console.log("service name is ",serviceName);
         
