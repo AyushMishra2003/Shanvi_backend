@@ -9,15 +9,30 @@ import AppError from "../utils/error.utlis.js"
 const addOrder = async (req, res, next) => {
   try {
     let orders = req.body;
+
+
+    console.log(orders);
+    
+
+
+    
+
     if (!Array.isArray(orders)) orders = [orders];
+    let userEmail=""
 
     let newCheckout;
     const io = req.app.get("io"); // 🔥 Get Socket.io instance
 
     for (let order of orders) {
-      const { email, address, phoneNumber, altPhoneNumber, orderDetails} = order;
+      const { email, address, phoneNumber, altPhoneNumber, orderDetails,pinCode} = order;
 
-      if (!email || !address || !phoneNumber || !altPhoneNumber || !orderDetails || !Array.isArray(orderDetails) || orderDetails.length === 0) {
+      userEmail=email
+
+  
+  
+      if (!email || !address || !phoneNumber || !altPhoneNumber ) {
+        console.log('coming');
+        
         return next(new AppError("Missing required fields or invalid order details format", 400));
       }
 
@@ -28,7 +43,11 @@ const addOrder = async (req, res, next) => {
       for (let patientOrder of orderDetails) {
         const { patientName, patientAge, patientGender, tests } = patientOrder;
 
-        if (!patientName || !patientAge || !patientGender || !tests || !Array.isArray(tests) || tests.length === 0) {
+        console.log(patientOrder);
+        
+
+        if (!patientName || !patientAge || !tests || !Array.isArray(tests) || tests.length === 0) {
+
           return next(new AppError("Invalid patient details or tests missing", 400));
         }
 
@@ -45,7 +64,6 @@ const addOrder = async (req, res, next) => {
             bookingStatus: "pending",
             bookingDate: test.bookingDate,
             bookingTime:moment(`${test.bookingDate} ${test.bookingTime}`, "YYYY-MM-DD hh:mm A").toDate(),
-            
             reportStatus: "not ready",
           });
 
@@ -59,24 +77,103 @@ const addOrder = async (req, res, next) => {
         address,
         phoneNumber,
         altPhoneNumber,
+        pinCode
       });
 
       if (!newCheckout) {
         return next(new AppError("Checkout entry not created", 400));
       }
 
-      console.log("✅ Order Created:", newCheckout);
+   
       
       // 🔥 Order created successfully, emit event
       io.emit("orderUpdated", newCheckout);
-      console.log("📢 Emitting orderUpdated event:", newCheckout);
+
 
 
       const todaySummary = await getTodayOrdersSummaryData();
       io.emit("todayOrdersSummary", todaySummary); // 🔥 Total summary bhi emit karo
-      console.log("📢 Emitting updated total summary:", todaySummary);
+
     
     }
+
+     // 📨 Send Confirmation Email to User
+     const emailSubject = "Order Confirmation - Shanya Scans & Theranostics";
+     const emailMessage = (orders) => {
+      if (!orders || !Array.isArray(orders) || orders.length === 0) {
+        return `<p>No valid order details found.</p>`;
+      }
+    
+      return `
+        <div style="font-family: Poppins, sans-serif; max-width: 600px; background-color: #f8f8f8; margin:0 auto; border-radius: 10px; padding: 20px;">
+          
+          <img src="https://ayush.webakash1806.com/assets/Shanya-Djn2HjOw.png" style="width: 13rem; display: block; margin-bottom: 10px;" />
+          
+          <h1 style="font-size: 18px; font-weight: 600; line-height: 24px; margin-bottom: 10px; color: #464646;">
+            Your Order has been successfully placed with <strong>Shanya Scans & Theranostics</strong>.
+          </h1>
+    
+          <p style="font-size: 16px; color: #333; font-weight: 500; margin-bottom: 10px;">
+            Here are your order details:
+          </p>
+    
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+            <tr style="background-color: #e7f3ff; color: #1877f2;">
+              <th style="padding: 8px; border: 1px solid #ddd;">Patient Name</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Age</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Gender</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Test</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Price</th>
+              <th style="padding: 8px; border: 1px solid #ddd;">Date</th>
+            </tr>
+            ${
+              orders
+                .map((order) => {
+                  if (!order.orderDetails || !Array.isArray(order.orderDetails)) return "";
+                  return order.orderDetails
+                    .map((patient) => {
+                      if (!patient.tests || !Array.isArray(patient.tests)) return "";
+                      return patient.tests
+                        .map(
+                          (test) => `
+                            <tr style="background-color: #fff;">
+                              <td style="padding: 8px; border: 1px solid #ddd;">${patient.patientName || "N/A"}</td>
+                              <td style="padding: 8px; border: 1px solid #ddd;">${patient.patientAge || "N/A"}</td>
+                              <td style="padding: 8px; border: 1px solid #ddd;">${patient.patientGender || "N/A"}</td>
+                              <td style="padding: 8px; border: 1px solid #ddd;">${test.orderName || "N/A"}</td>
+                              <td style="padding: 8px; border: 1px solid #ddd;">₹${test.orderPrice || 0}</td>
+                              <td style="padding: 8px; border: 1px solid #ddd;">${test.bookingDate || "N/A"}</td>
+                            </tr>
+                          `
+                        )
+                        .join("");
+                    })
+                    .join("");
+                })
+                .join("")
+            }
+          </table>
+    
+          <p style="font-size: 16px; color: #333; font-weight: 500; margin-bottom: 10px;">
+                   We will reach you soon.
+          </p>
+    
+          <p style="font-size: 14px; color: rgb(64, 64, 64);">
+            <b>Best Regards</b>,<br/>
+            Shanya Scans & Theranostics <br/>
+            <b>Toll-Free No:</b> 1800 123 4187 <br/>
+            <a href="https://www.shanyascans.com" style="color: #1877f2; text-decoration: none;">www.shanyascans.com</a>
+          </p>
+        </div>
+      `;
+    };
+
+
+   
+    
+    
+   
+    await sendEmail(userEmail, emailSubject, emailMessage(orders));
 
     res.status(201).json({
       success: true,
@@ -89,8 +186,6 @@ const addOrder = async (req, res, next) => {
     return next(new AppError(error.message, 500));
   }
 };
-
-
 
 
 const getOrder = async (req, res, next) => {
@@ -120,7 +215,6 @@ const getOrder = async (req, res, next) => {
 };
 
 
-
 const getTodayOrdersSummary = async (req, res) => {
   try {
     const summary = await getTodayOrdersSummaryData(); // 🔥 Helper function se data lo
@@ -137,11 +231,6 @@ const getTodayOrdersSummary = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-
-
-
-
 
 
 const getTodayOrdersSummaryData = async () => {
@@ -198,10 +287,9 @@ const getTodayOrdersSummaryData = async () => {
 };
 
 
-
 const getLatestOrder=async(req,res,next)=>{
   try {
-    const oneHourAgo = moment().subtract(1, "hour").toDate(); // 1 hour pehle ka time
+    const oneHourAgo = moment().subtract(2, "hour").toDate(); // 1 hour pehle ka time
 
     const bookings = await OrderModel.find({
       orderDateTime: { $gte: oneHourAgo }, // Order time 1 hour pehle ya uske baad ka hona chahiye
@@ -220,6 +308,9 @@ const getLatestOrder=async(req,res,next)=>{
     });
   }
 }
+
+
+
 
 
 

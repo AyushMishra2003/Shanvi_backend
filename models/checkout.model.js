@@ -7,6 +7,9 @@ const checkoutSchema = new Schema(
             ref: "User", // Referencing the Service_Detail model
             default: {},
       },
+      pinCode:{
+          type:String,
+      },
       orderDetails: [
         {
           type: Schema.Types.ObjectId,
@@ -18,6 +21,12 @@ const checkoutSchema = new Schema(
       address:{
         type:String,
         required:true
+      },
+      addressType:{
+        type:String,
+      },
+      pinCode:{
+        type:String,
       },
       phoneNumber:{
         type:Number,

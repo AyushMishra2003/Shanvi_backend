@@ -7,6 +7,7 @@ const orderSchema=new Schema(
         patientGender: { type: String, enum: ["male", "female", "other"], required: true },
         quantity: { type: Number, required: true },
         category: { type: String, required: true},
+        addressType:{type:String,enum:["work","office","work"]},
         orderName:{
             type:String,
             required:true
