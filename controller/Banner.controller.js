@@ -58,8 +58,13 @@ const addBanner = async (req, res, next) => {
 
 const getBanner = async (req, res, next) => {
     try {
-
+   
+        console.log("chala");
+        
         const { types } = req.params
+
+        console.log(req.params);
+        
 
         console.log(types);
 

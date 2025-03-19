@@ -11,11 +11,8 @@ const addOrder = async (req, res, next) => {
     let orders = req.body;
 
 
-    console.log(orders);
-    
 
-
-    
+  
 
     if (!Array.isArray(orders)) orders = [orders];
     let userEmail=""
@@ -42,10 +39,6 @@ const addOrder = async (req, res, next) => {
       const orderIds = [];
       for (let patientOrder of orderDetails) {
         const { patientName, patientAge, patientGender, tests } = patientOrder;
-
-        console.log(patientOrder);
-        
-
         if (!patientName || !patientAge || !tests || !Array.isArray(tests) || tests.length === 0) {
 
           return next(new AppError("Invalid patient details or tests missing", 400));
@@ -65,6 +58,7 @@ const addOrder = async (req, res, next) => {
             bookingDate: test.bookingDate,
             bookingTime:moment(`${test.bookingDate} ${test.bookingTime}`, "YYYY-MM-DD hh:mm A").toDate(),
             reportStatus: "not ready",
+            userId:user._id
           });
 
           orderIds.push(newOrder._id);
@@ -196,7 +190,7 @@ const getOrder = async (req, res, next) => {
       .populate({
         path: "orderDetails",
         model: "OrderModel",
-      }) // Populate order details
+      }) 
       .exec();
 
     if (!orders || orders.length === 0) {
@@ -310,8 +304,59 @@ const getLatestOrder=async(req,res,next)=>{
 }
 
 
+const getHomeCollectionOrder = async (req, res, next) => {
+  try {
+      // const allHomeCollection = await OrderModel.find({ orderType: "home collection" })
+      //     .populate("userId"); 
+      //     .populate("assignedTo");
+          const allHomeCollection = await OrderModel.find({ orderType: "home collection" })
+    .populate("userId") // Populating user details
+    .populate("assignedTo"); // If assignedTo exists
 
 
+      if (!allHomeCollection || allHomeCollection.length === 0) {  // Ensure it's not empty
+          return next(new AppError("Home-Collection Not Found", 400));
+      }
+
+      res.status(200).json({
+          success: true,
+          message: "Home-Collection Order",
+          data: allHomeCollection
+      });
+
+  } catch (error) {
+      return next(new AppError(error.message, 500));
+  }
+};
+
+
+const getHomeCollectionDetails=async(req,res,next)=>{
+   try{
+
+    const {id}=req.params
+
+    const validOrderDetails=await OrderModel.findById(id)
+    .populate("userId") // Populating user details
+    .populate("assignedTo"); // If assignedTo exists
+
+
+    if(!validOrderDetails){
+        return next(new AppError("Order Details is Not Found",400))
+    }
+
+    // console.log(validOrderDetails);
+    
+
+    res.status(200).json({
+      success:true,
+      message:"Order Detail Found",
+      data:validOrderDetails
+    })
+
+   }catch(error){
+     return next(new AppError(error.message,500))
+   }
+}
 
 
 
@@ -319,5 +364,7 @@ export {
     addOrder,
     getOrder,
     getTodayOrdersSummary,
-    getLatestOrder
+    getLatestOrder,
+    getHomeCollectionOrder,
+    getHomeCollectionDetails
 }

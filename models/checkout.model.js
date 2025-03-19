@@ -13,7 +13,7 @@ const checkoutSchema = new Schema(
       orderDetails: [
         {
           type: Schema.Types.ObjectId,
-          ref: "OrderModel", // Referencing the Service_Detail model
+          ref: "OrderModel", // Referencing the Order_Detail model
           default: [],
         },
       ],

@@ -8,9 +8,9 @@ const addDoctor=async(req,res,next)=>{
   try{
     const {doctorName, doctorDesination,refService,experience,degree,isDoctor}=req.body
 
-    // if(!doctorName || !doctorDesination ){
-    //     return next(new AppError("All field are Required",400))
-    // }
+    if(!doctorName || !doctorDesination ){
+        return next(new AppError("All field are Required",400))
+    }
 
     const addDoctor=new DoctorModel({
         doctorName,

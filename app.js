@@ -27,6 +27,7 @@ import bannerRoute from "./routes/Banner.route.js";
 import { addUtils, getUtils } from "./controller/utlis.controller.js";
 import { updateSlugDetails } from "./controller/test.controller.js";
 import MessageModel from "./models/Message.model.js";
+import collectionRouter from "./routes/collection.route.js";
 
 
 
@@ -87,10 +88,12 @@ app.use("/api/v1/contact",contactRoute)
 app.use("/api/v1/gallery",galleryRoute)
 app.use("/api/v1/pathology",pathologyRouter)
 app.use("/api/v1/user",userRoute)
-
 app.use("/api/v1/banner",bannerRoute)
+app.use("/api/v1/collection",collectionRouter)
 app.post("/api/v1/utlis",addUtils)
 app.get("/api/v1/utlis/:url",getUtils)
+
+
 
 
 app.get("/api/v1/message", async (req, res) => {
