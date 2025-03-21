@@ -12,24 +12,24 @@ const addOrder = async (req, res, next) => {
 
 
 
-  
+
 
     if (!Array.isArray(orders)) orders = [orders];
-    let userEmail=""
+    let userEmail = ""
 
     let newCheckout;
     const io = req.app.get("io"); // 🔥 Get Socket.io instance
 
     for (let order of orders) {
-      const { email, address, phoneNumber, altPhoneNumber, orderDetails,pinCode} = order;
+      const { email, address, phoneNumber, altPhoneNumber, orderDetails, pinCode } = order;
 
-      userEmail=email
+      userEmail = email
 
-  
-  
-      if (!email || !address || !phoneNumber || !altPhoneNumber ) {
+
+
+      if (!email || !address || !phoneNumber || !altPhoneNumber) {
         console.log('coming');
-        
+
         return next(new AppError("Missing required fields or invalid order details format", 400));
       }
 
@@ -54,11 +54,11 @@ const addOrder = async (req, res, next) => {
             orderName: test.orderName,
             orderType: test.orderType,
             orderPrice: test.orderPrice || 0,
-            bookingStatus: "pending",
+            bookingStatus: "confirmed",
             bookingDate: test.bookingDate,
-            bookingTime:moment(`${test.bookingDate} ${test.bookingTime}`, "YYYY-MM-DD hh:mm A").toDate(),
+            bookingTime: moment(`${test.bookingDate} ${test.bookingTime}`, "YYYY-MM-DD hh:mm A").toDate(),
             reportStatus: "not ready",
-            userId:user._id
+            userId: user._id
           });
 
           orderIds.push(newOrder._id);
@@ -78,8 +78,8 @@ const addOrder = async (req, res, next) => {
         return next(new AppError("Checkout entry not created", 400));
       }
 
-   
-      
+
+
       // 🔥 Order created successfully, emit event
       io.emit("orderUpdated", newCheckout);
 
@@ -88,16 +88,16 @@ const addOrder = async (req, res, next) => {
       const todaySummary = await getTodayOrdersSummaryData();
       io.emit("todayOrdersSummary", todaySummary); // 🔥 Total summary bhi emit karo
 
-    
+
     }
 
-     // 📨 Send Confirmation Email to User
-     const emailSubject = "Order Confirmation - Shanya Scans & Theranostics";
-     const emailMessage = (orders) => {
+    // 📨 Send Confirmation Email to User
+    const emailSubject = "Order Confirmation - Shanya Scans & Theranostics";
+    const emailMessage = (orders) => {
       if (!orders || !Array.isArray(orders) || orders.length === 0) {
         return `<p>No valid order details found.</p>`;
       }
-    
+
       return `
         <div style="font-family: Poppins, sans-serif; max-width: 600px; background-color: #f8f8f8; margin:0 auto; border-radius: 10px; padding: 20px;">
           
@@ -120,16 +120,15 @@ const addOrder = async (req, res, next) => {
               <th style="padding: 8px; border: 1px solid #ddd;">Price</th>
               <th style="padding: 8px; border: 1px solid #ddd;">Date</th>
             </tr>
-            ${
-              orders
-                .map((order) => {
-                  if (!order.orderDetails || !Array.isArray(order.orderDetails)) return "";
-                  return order.orderDetails
-                    .map((patient) => {
-                      if (!patient.tests || !Array.isArray(patient.tests)) return "";
-                      return patient.tests
-                        .map(
-                          (test) => `
+            ${orders
+          .map((order) => {
+            if (!order.orderDetails || !Array.isArray(order.orderDetails)) return "";
+            return order.orderDetails
+              .map((patient) => {
+                if (!patient.tests || !Array.isArray(patient.tests)) return "";
+                return patient.tests
+                  .map(
+                    (test) => `
                             <tr style="background-color: #fff;">
                               <td style="padding: 8px; border: 1px solid #ddd;">${patient.patientName || "N/A"}</td>
                               <td style="padding: 8px; border: 1px solid #ddd;">${patient.patientAge || "N/A"}</td>
@@ -139,13 +138,13 @@ const addOrder = async (req, res, next) => {
                               <td style="padding: 8px; border: 1px solid #ddd;">${test.bookingDate || "N/A"}</td>
                             </tr>
                           `
-                        )
-                        .join("");
-                    })
-                    .join("");
-                })
-                .join("")
-            }
+                  )
+                  .join("");
+              })
+              .join("");
+          })
+          .join("")
+        }
           </table>
     
           <p style="font-size: 16px; color: #333; font-weight: 500; margin-bottom: 10px;">
@@ -163,10 +162,10 @@ const addOrder = async (req, res, next) => {
     };
 
 
-   
-    
-    
-   
+
+
+
+
     await sendEmail(userEmail, emailSubject, emailMessage(orders));
 
     res.status(201).json({
@@ -190,10 +189,10 @@ const getOrder = async (req, res, next) => {
       .populate({
         path: "orderDetails",
         model: "OrderModel",
-      }) 
+      })
       .exec();
 
-    if (!orders || orders.length === 0) {
+    if (!orders) {
       return next(new AppError("No orders found", 404));
     }
 
@@ -204,6 +203,35 @@ const getOrder = async (req, res, next) => {
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
+    return next(new AppError(error.message, 500));
+  }
+};
+
+
+const getOrderDetail = async (req, res, next) => {
+  try {
+
+    const { id } = req.params
+
+    const orders = await checkoutModel
+      .findById(id)
+      .populate("userDetails", "name email phoneNumber") // Populate user details
+      .populate({
+        path: "orderDetails",
+        model: "OrderModel",
+      })
+      .exec();
+
+    if (!orders) {
+      return next(new AppError("No orders found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Orders fetched successfully",
+      data: orders,
+    });
+  } catch (error) {
     return next(new AppError(error.message, 500));
   }
 };
@@ -221,7 +249,7 @@ const getTodayOrdersSummary = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    
+
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -281,7 +309,7 @@ const getTodayOrdersSummaryData = async () => {
 };
 
 
-const getLatestOrder=async(req,res,next)=>{
+const getLatestOrder = async (req, res, next) => {
   try {
     const oneHourAgo = moment().subtract(2, "hour").toDate(); // 1 hour pehle ka time
 
@@ -306,65 +334,141 @@ const getLatestOrder=async(req,res,next)=>{
 
 const getHomeCollectionOrder = async (req, res, next) => {
   try {
-      // const allHomeCollection = await OrderModel.find({ orderType: "home collection" })
-      //     .populate("userId"); 
-      //     .populate("assignedTo");
-          const allHomeCollection = await OrderModel.find({ orderType: "home collection" })
-    .populate("userId") // Populating user details
-    .populate("assignedTo"); // If assignedTo exists
 
 
-      if (!allHomeCollection || allHomeCollection.length === 0) {  // Ensure it's not empty
-          return next(new AppError("Home-Collection Not Found", 400));
-      }
+    const allHomeCollection = await OrderModel.find({ orderType: "home collection" })
+      .populate("userId") 
+      .populate("assignedTo");
 
-      res.status(200).json({
-          success: true,
-          message: "Home-Collection Order",
-          data: allHomeCollection
-      });
+
+    if (!allHomeCollection) {  // Ensure it's not empty
+      return next(new AppError("Home-Collection Not Found", 400));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Home-Collection Order",
+      data: allHomeCollection
+    });
 
   } catch (error) {
-      return next(new AppError(error.message, 500));
+    console.log(error);
+
+    return next(new AppError(error.message, 500));
   }
 };
 
 
-const getHomeCollectionDetails=async(req,res,next)=>{
-   try{
+const getHomeCollectionDetails = async (req, res, next) => {
+  try {
 
-    const {id}=req.params
-
-    const validOrderDetails=await OrderModel.findById(id)
-    .populate("userId") // Populating user details
-    .populate("assignedTo"); // If assignedTo exists
+    const { id } = req.params
 
 
-    if(!validOrderDetails){
-        return next(new AppError("Order Details is Not Found",400))
+
+
+    const validOrderDetails = await OrderModel.findById(id)
+      .populate("userId") // Populating user details
+      .populate("assignedTo"); // If assignedTo exists
+
+
+    if (!validOrderDetails) {
+      return next(new AppError("Order Details is Not Found", 400))
     }
 
     // console.log(validOrderDetails);
-    
+
 
     res.status(200).json({
-      success:true,
-      message:"Order Detail Found",
-      data:validOrderDetails
+      success: true,
+      message: "Order Detail Found",
+      data: validOrderDetails
     })
 
-   }catch(error){
-     return next(new AppError(error.message,500))
-   }
+  } catch (error) {
+    return next(new AppError(error.message, 500))
+  }
+}
+
+
+const addOrderReport = async (req, res, next) => {
+  try {
+
+    const { id } = req.params
+
+    const validOrder = await OrderModel.findById(id)
+
+
+
+
+  } catch (error) {
+    return next(new AppError(error.message, 500))
+  }
+}
+
+
+const changeOrderStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const { newStatus } = req.body;
+
+
+    const validOrder = await OrderModel.findById(id);
+
+    if (!validOrder) {
+      return next(new AppError("Order is Not Valid", 400));
+    }
+
+    const currentStatus = validOrder.bookingStatus;
+
+    // Prevent changing status of a completed order
+    if (currentStatus === "completed") {
+      return next(new AppError("Cannot change status of a completed order", 400));
+    }
+
+    // Define allowed transitions
+    const validTransitions = {
+      pending: ["confirmed", "ongoing", "cancelled"],
+      confirmed: ["ongoing", "completed", "cancelled"],
+      ongoing: ["completed"],
+      cancelled: ["pending", "confirmed"],
+      completed: ["ongoing"]
+    };
+
+
+
+    // Check if the new status is allowed
+    if (!validTransitions[currentStatus]?.includes(newStatus)) {
+      return next(new AppError(`Invalid transition from ${currentStatus} to ${newStatus}`, 400));
+    }
+
+    // Update the order status
+    validOrder.bookingStatus = newStatus;
+    await validOrder.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Order status updated to ${newStatus}`,
+      order: validOrder,
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    return next(new AppError(error.message, 500));
+  }
 }
 
 
 
 export {
-    addOrder,
-    getOrder,
-    getTodayOrdersSummary,
-    getLatestOrder,
-    getHomeCollectionOrder,
-    getHomeCollectionDetails
+  addOrder,
+  getOrder,
+  getOrderDetail,
+  getTodayOrdersSummary,
+  getLatestOrder,
+  getHomeCollectionOrder,
+  getHomeCollectionDetails,
+  changeOrderStatus
 }

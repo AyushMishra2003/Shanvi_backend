@@ -23,7 +23,7 @@ const orderSchema = new Schema(
         },
         bookingStatus: {
             type: String,
-            enum: ["pending", "confirmed", "cancelled", "completed"],
+            enum: ["pending", "confirmed", "cancelled", "completed","ongoing"],
             default: "pending",
         },
         bookingDate: { type: Date, required: true },
