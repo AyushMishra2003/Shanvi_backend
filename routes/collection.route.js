@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addCollectionSales, assignedOrder, getCollectionSales, getCollectionSalesDetail, loginCollectionSales } from "../controller/collectionSales.controller.js";
+import { addCollectionSales, assignedOrder, collectionOrderSummary, getCollectionSales, getCollectionSalesDetail, loginCollectionSales } from "../controller/collectionSales.controller.js";
 
 
 
@@ -10,6 +10,6 @@ collectionRouter.get("/",getCollectionSales)
 collectionRouter.post("/login",loginCollectionSales)
 collectionRouter.post("/assigned",assignedOrder)
 collectionRouter.get("/detail/:id",getCollectionSalesDetail)
-
+collectionRouter.get("/summary/:id",collectionOrderSummary)
 
 export default collectionRouter

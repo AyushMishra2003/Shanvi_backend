@@ -28,6 +28,7 @@ import { addUtils, getUtils } from "./controller/utlis.controller.js";
 import { updateSlugDetails } from "./controller/test.controller.js";
 import MessageModel from "./models/Message.model.js";
 import collectionRouter from "./routes/collection.route.js";
+import adminRouter from "./routes/admin.route.js";
 
 
 
@@ -87,6 +88,7 @@ app.use("/api/v1/carrer",cvRouter)
 app.use("/api/v1/contact",contactRoute)
 app.use("/api/v1/gallery",galleryRoute)
 app.use("/api/v1/pathology",pathologyRouter)
+app.use("/api/v1/admin",adminRouter)
 app.use("/api/v1/user",userRoute)
 app.use("/api/v1/banner",bannerRoute)
 app.use("/api/v1/collection",collectionRouter)

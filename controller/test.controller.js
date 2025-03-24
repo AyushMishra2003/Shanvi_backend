@@ -526,6 +526,8 @@ const updateTestDetails = async (req, res, next) => {
         const updateData = req.body;
 
         console.log(updateData);
+
+        const {testDetailName}=updateData
         
 
         // Find and update the TestDetail document in one step
@@ -535,7 +537,13 @@ const updateTestDetails = async (req, res, next) => {
             { new: true, runValidators: true } // Returns updated document & runs validation
         );
 
-        console.log(testDetail);
+        if(updateData.testDetailName){
+             testDetail.testDetailName=updateData.testDetailName
+        }
+
+        await testDetail.save()
+
+     
         
 
         if (!testDetail) {

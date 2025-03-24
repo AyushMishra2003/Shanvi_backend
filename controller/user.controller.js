@@ -79,15 +79,7 @@ const generateToken = (id) => {
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Send Email Function
-// const sendEmail = async (email, subject, text) => {
-//   await transporter.sendMail({
-//     from: '"Shanya Scans" <ucscabproject@gmail.com>',
-//     to: email,
-//     subject,
-//     text
-//   });
-// };
+
 
 // **1. Register User**
 export const register = async (req, res, next) => {

@@ -11,9 +11,6 @@ const addOrder = async (req, res, next) => {
     let orders = req.body;
 
 
-
-
-
     if (!Array.isArray(orders)) orders = [orders];
     let userEmail = ""
 
@@ -81,7 +78,7 @@ const addOrder = async (req, res, next) => {
 
 
       // 🔥 Order created successfully, emit event
-      io.emit("orderUpdated", newCheckout);
+      io.emit("orderPlaced", newCheckout);
 
 
 

@@ -90,7 +90,7 @@ const getDoctor = async (req, res, next) => {
 const editDoctor = async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { doctorName, doctorDesination,refService } = req.body;
+      const { doctorName, doctorDesination,refService ,degree} = req.body;
 
       console.log(req.body);
       
@@ -107,6 +107,7 @@ const editDoctor = async (req, res, next) => {
   
       if (doctorName) doctor.doctorName = doctorName;
       if (doctorDesination) doctor.doctorDesination = doctorDesination;
+      if(degree) doctor.degree=degree
 
       if(refService){
          doctor.refService=refService
@@ -192,6 +193,24 @@ const editDoctor = async (req, res, next) => {
     }
 };
 
+const testingDoctors=async(req,res,next)=>{
+   try{
+
+    const io = req.app.get("io");
+
+    // ✅ Socket.IO se event trigger karna
+    io.emit("ham-aa-gaye");
+
+    res.status(201).json({
+      success: true,
+      message: "Order created successfully!"
+    });
+
+   }catch(error){
+      
+   }
+}
+
   
 
 export {
@@ -199,5 +218,6 @@ export {
     getDoctor,
     editDoctor,
     deleteDoctor,
-    deleteAllDoctors
+    deleteAllDoctors,
+    testingDoctors
 }

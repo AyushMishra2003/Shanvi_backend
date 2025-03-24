@@ -35,15 +35,22 @@ const io = new Server(server, {
 
 // ✅ Real-time message handling
 
-io.on("connection", async (socket) => {
-  console.log("🟢 New client connected:", socket.id);
+io.on("connection", (socket) => {
+  console.log("🟢 New Client Connected:", socket.id);
 
-  // Existing orders भेजना
-  const orders = await checkoutModel.find().populate("orderDetails");
-  socket.emit("loadOrders", orders);
+  // 4. Send message to client
+  socket.emit("welcome", "🚀 Welcome to the Server!");
 
+  socket.on("Don", () => {
+    console.log("Don Ayush Mishra Ji ");
+  });
+
+
+
+ 
+  // 6. Handle Disconnection
   socket.on("disconnect", () => {
-    console.log("🔴 Client disconnected:", socket.id);
+    console.log("🔴 Client Disconnected:", socket.id);
   });
 });
 

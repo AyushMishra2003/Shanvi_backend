@@ -3,7 +3,7 @@ import OrderModel from "../models/order.model.js"
 import AppError from "../utils/error.utlis.js"
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
-
+import { startOfDay, endOfDay } from 'date-fns';
 
 
 const addCollectionSales = async (req, res, next) => {
@@ -175,7 +175,7 @@ const orderReportAdded = async (req, res, next) => {
         const { id } = req.params
 
         console.log(id);
-        
+
 
         const validOrder = await OrderModel.findById(id)
 
@@ -201,14 +201,14 @@ const orderReportAdded = async (req, res, next) => {
             fs.rm(`uploads/${req.file.filename}`);
         }
 
-        validOrder.reportStatus="ready"
+        validOrder.reportStatus = "ready"
 
         await validOrder.save()
 
         res.status(200).json({
-            success:true,
-            message:"Report Added Succesfully",
-            data:validOrder
+            success: true,
+            message: "Report Added Succesfully",
+            data: validOrder
         })
 
 
@@ -219,6 +219,110 @@ const orderReportAdded = async (req, res, next) => {
 }
 
 
+const collectionOrderSummary = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Step 1: Validate Employee
+        const validEmployee = await collectionModel.findById(id);
+        if (!validEmployee) {
+            return next(new AppError("Employee is Not Valid", 400));
+        }
+
+        // Step 2: Define Time Range for Today
+        const todayStart = startOfDay(new Date()); // आज की शुरुआत
+        const todayEnd = endOfDay(new Date());     // आज का अंत
+
+        // Step 3: Aggregate Order Summary
+        const orderSummary = await OrderModel.aggregate([
+            {
+                $match: {
+                    _id: { $in: validEmployee.orderDetails }, // कर्मचारी की बुकिंग्स
+                },
+            },
+            {
+                $facet: {
+                    // 1. कुल बुकिंग
+                    totalBookings: [{ $count: "total" }],
+
+                    // 2. आज की कुल बुकिंग
+                    todayTotalBookings: [
+                        {
+                            $match: {
+                                createdAt: { $gte: todayStart, $lte: todayEnd },
+                            },
+                        },
+                        { $count: "todayTotal" },
+                    ],
+
+                    // 3. कुल ongoing बुकिंग
+                    ongoingBookings: [
+                        { $match: { status: "ongoing" } },
+                        { $count: "ongoingTotal" },
+                    ],
+
+                    // 4. कुल completed बुकिंग
+                    completedBookings: [
+                        { $match: { status: "completed" } },
+                        { $count: "completedTotal" },
+                    ],
+
+                    // 5. आज की ongoing बुकिंग
+                    todayOngoingBookings: [
+                        {
+                            $match: {
+                                status: "ongoing",
+                                createdAt: { $gte: todayStart, $lte: todayEnd },
+                            },
+                        },
+                        { $count: "todayOngoing" },
+                    ],
+
+                    // 6. आज की completed बुकिंग
+                    todayCompletedBookings: [
+                        {
+                            $match: {
+                                status: "completed",
+                                createdAt: { $gte: todayStart, $lte: todayEnd },
+                            },
+                        },
+                        { $count: "todayCompleted" },
+                    ],
+                },
+            },
+            {
+                $project: {
+                    totalBookings: { $ifNull: [{ $arrayElemAt: ["$totalBookings.total", 0] }, 0] },
+                    todayTotalBookings: { $ifNull: [{ $arrayElemAt: ["$todayTotalBookings.todayTotal", 0] }, 0] },
+                    ongoingBookings: { $ifNull: [{ $arrayElemAt: ["$ongoingBookings.ongoingTotal", 0] }, 0] },
+                    completedBookings: { $ifNull: [{ $arrayElemAt: ["$completedBookings.completedTotal", 0] }, 0] },
+                    todayOngoingBookings: { $ifNull: [{ $arrayElemAt: ["$todayOngoingBookings.todayOngoing", 0] }, 0] },
+                    todayCompletedBookings: { $ifNull: [{ $arrayElemAt: ["$todayCompletedBookings.todayCompleted", 0] }, 0] },
+                },
+            },
+        ]);
+
+        // Step 4: Response Data
+        const summary = orderSummary[0] || {
+            totalBookings: 0,
+            todayTotalBookings: 0,
+            ongoingBookings: 0,
+            completedBookings: 0,
+            todayOngoingBookings: 0,
+            todayCompletedBookings: 0,
+        };
+
+        // Step 5: Send Response
+        res.status(200).json({
+            success: true,
+            data: summary,
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+
 
 export {
     addCollectionSales,
@@ -226,5 +330,6 @@ export {
     loginCollectionSales,
     assignedOrder,
     getCollectionSalesDetail,
-    orderReportAdded
+    orderReportAdded,
+    collectionOrderSummary
 }
