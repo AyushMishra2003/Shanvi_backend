@@ -251,7 +251,6 @@ export const isLoginAdmin = async (req, res, next) => {
     }
 
 
-
     // Token is valid, and user exists
     res.status(200).json({
       success: true,

@@ -8,7 +8,7 @@ const doctorRoute=Router()
 
 doctorRoute.post("/",upload.single("doctorPhoto"),addDoctor)
 doctorRoute.get("/",getDoctor)
-doctorRoute.get("/testing",testingDoctors)
+doctorRoute.post("/testing",testingDoctors)
 doctorRoute.put("/:id",upload.single("doctorPhoto"),editDoctor)
 doctorRoute.delete("/many",deleteAllDoctors)
 doctorRoute.delete("/:id",deleteDoctor)

@@ -361,9 +361,6 @@ const getHomeCollectionDetails = async (req, res, next) => {
 
     const { id } = req.params
 
-
-
-
     const validOrderDetails = await OrderModel.findById(id)
       .populate("userId") // Populating user details
       .populate("assignedTo"); // If assignedTo exists

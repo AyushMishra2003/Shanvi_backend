@@ -91,8 +91,7 @@ const loginCollectionSales = async (req, res, next) => {
 const assignedOrder = async (req, res, next) => {
     try {
         const { orderId, salesId } = req.body
-
-        const io = req.app.get("io"); // 🔥 Get Socket.io instance
+ 
 
         if (!orderId || !salesId) {
             return next(new AppError("Details are Required", 400))
@@ -125,7 +124,41 @@ const assignedOrder = async (req, res, next) => {
 
         await validOrder.save()
 
-        io.emit("assignedCompleted",validOrder);
+
+
+
+
+        // ------------ Ayush Mishra/___________
+
+
+
+        const io = req.app.get("io"); // Get io instance
+        const onlineUsers = req.app.get("onlineUsers"); // Get Online Users Map
+        const message="new-order-assigned"
+        // const { salesPersonId, message } = req.body;
+
+        // if (!salesPersonId || !message) {
+        //   return res.status(400).json({ error: "salesPersonId and message required" });
+        // }
+
+        console.log(salesId);
+
+        console.log(validSales);
+        
+        
+
+        // Check if user is online
+        const socketId = onlineUsers.get(salesId);
+
+        console.log(socketId);
+
+        if (socketId) {
+            io.to(socketId).emit("privateMessage", {
+                message,
+                time: new Date().toISOString(),
+              });
+        }
+
 
         res.status(200).json({
             success: true,

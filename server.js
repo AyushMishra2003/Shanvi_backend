@@ -33,6 +33,13 @@ const io = new Server(server, {
   }
 });
 
+
+const onlineUsers = new Map(); // SalesPersonId => SocketId
+
+
+
+
+
 // ✅ Real-time message handling
 
 io.on("connection", (socket) => {
@@ -41,21 +48,45 @@ io.on("connection", (socket) => {
   // 4. Send message to client
   socket.emit("welcome", "🚀 Welcome to the Server!");
 
-  socket.on("don", (data) => {
-    console.log(data);
+  // Listen for room join event
+  socket.on("joinRoom", (salesPersonId) => {
+    console.log(`🏠 Salesperson ${salesPersonId} joined room: ${salesPersonId}`);
+    socket.join(salesPersonId); // Join Room
+    onlineUsers.set(salesPersonId, socket.id);
   });
 
 
 
- 
+  // Join room when salesPerson logs in
+
+  // socket.on("joinRoom", (salesPersonId) => {
+  //   socket.join(salesPersonId);
+  //   onlineUsers.set(salesPersonId, socket.id);
+  //   console.log(`🟡 Online Users Map:`, [...onlineUsers.entries()]);
+  // });
+
+
+
+
   // 6. Handle Disconnection
+  // socket.on("disconnect", () => {
+  //   console.log("🔴 Client Disconnected:", socket.id);
+  // });
+
   socket.on("disconnect", () => {
-    console.log("🔴 Client Disconnected:", socket.id);
+    console.log("❌ Client disconnected:", socket.id);
+    for (let [key, value] of onlineUsers.entries()) {
+      if (value === socket.id) {
+        onlineUsers.delete(key);
+        console.log(`🛑 Removed ${key} from onlineUsers.`);
+      }
+    }
   });
 });
 
 
 app.set("io", io); // Store Socket.io instance in app for global access
+app.set("onlineUsers", onlineUsers); // 👈 Store in app
 
 server.listen(PORT, async () => {
   await ConnectionToDB();
