@@ -198,8 +198,11 @@ const testingDoctors=async(req,res,next)=>{
 
     const io = req.app.get("io");
 
+   
+    
+
     // ✅ Socket.IO se event trigger karna
-    io.emit("ham-aa-gaye");
+    io.emit("testing","hello i am testing");
 
     res.status(201).json({
       success: true,

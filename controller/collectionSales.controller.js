@@ -92,7 +92,7 @@ const assignedOrder = async (req, res, next) => {
     try {
         const { orderId, salesId } = req.body
 
-
+        const io = req.app.get("io"); // 🔥 Get Socket.io instance
 
         if (!orderId || !salesId) {
             return next(new AppError("Details are Required", 400))
@@ -104,9 +104,6 @@ const assignedOrder = async (req, res, next) => {
             return next(new AppError("Sales is Not Valid", 400))
         }
 
-        // if(validSales.status=="deactive"){
-        //       return next(new AppError("Sales is Not Active or In Field",400))
-        // }
 
         const validOrder = await OrderModel.findById(orderId)
 
@@ -127,6 +124,8 @@ const assignedOrder = async (req, res, next) => {
         await validSales.save()
 
         await validOrder.save()
+
+        io.emit("assignedCompleted",validOrder);
 
         res.status(200).json({
             success: true,

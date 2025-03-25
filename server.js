@@ -41,8 +41,8 @@ io.on("connection", (socket) => {
   // 4. Send message to client
   socket.emit("welcome", "🚀 Welcome to the Server!");
 
-  socket.on("Don", () => {
-    console.log("Don Ayush Mishra Ji ");
+  socket.on("don", (data) => {
+    console.log(data);
   });
 
 
