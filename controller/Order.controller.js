@@ -4,6 +4,31 @@ import OrderModel from "../models/order.model.js";
 import User from "../models/user.model.js";
 import sendEmail from "../utils/email.utlis.js"
 import AppError from "../utils/error.utlis.js"
+import axios from "axios";
+
+
+const getCoordinates = async (location) => {
+  try {
+    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+      params: {
+        address: location,
+        key: 'AIzaSyC9ZOZHwHmyTWXqACqpZY2TL7wX2_Zn05U',
+        region: 'IN' 
+      }
+    });
+
+    if (response.data && response.data.results.length > 0) {
+      const { lat, lng } = response.data.results[0].geometry.location;
+      return { lat, lng};
+    } else {
+      throw new Error('Location not found in India');
+    }
+  } catch (error) {
+    console.error('Error fetching coordinates:', error.message);
+    return null;
+  }
+};
+
 
 
 const addOrder = async (req, res, next) => {
@@ -15,15 +40,12 @@ const addOrder = async (req, res, next) => {
     let userEmail = ""
 
     let newCheckout;
-    const io = req.app.get("io"); // 🔥 Get Socket.io instance
+    const io = req.app.get("io"); 
 
     for (let order of orders) {
       const { email, address, phoneNumber, altPhoneNumber, orderDetails, pinCode } = order;
 
       userEmail = email
-
-
-
       if (!email || !address || !phoneNumber || !altPhoneNumber) {
         console.log('coming');
 
@@ -40,6 +62,7 @@ const addOrder = async (req, res, next) => {
 
           return next(new AppError("Invalid patient details or tests missing", 400));
         }
+        const address123=await getCoordinates(order.address);
 
         for (let test of tests) {
           const newOrder = await OrderModel.create({
@@ -55,8 +78,14 @@ const addOrder = async (req, res, next) => {
             bookingDate: test.bookingDate,
             bookingTime: moment(`${test.bookingDate} ${test.bookingTime}`, "YYYY-MM-DD hh:mm A").toDate(),
             reportStatus: "not ready",
-            userId: user._id
+            userId: user._id,
+            lat:address123.lat,
+            lng:address123.lng
+
           });
+
+          console.log(newOrder);
+          
 
           orderIds.push(newOrder._id);
         }
@@ -79,6 +108,10 @@ const addOrder = async (req, res, next) => {
 
       // 🔥 Order created successfully, emit event
       io.emit("orderPlaced", newCheckout);
+
+
+     
+ 
 
 
 
@@ -157,11 +190,6 @@ const addOrder = async (req, res, next) => {
         </div>
       `;
     };
-
-
-
-
-
 
     await sendEmail(userEmail, emailSubject, emailMessage(orders));
 

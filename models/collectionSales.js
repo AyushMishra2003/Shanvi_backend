@@ -27,6 +27,18 @@ const collectionSchema=new Schema(
           default: [],
         },
       ],
+      lat:{
+        type:String,
+        default:""
+      },
+      lng:{
+        type:String,
+        default:""
+      },
+      address:{
+        type:String,
+        default:""
+      },
     },
     {
         timestamps:true

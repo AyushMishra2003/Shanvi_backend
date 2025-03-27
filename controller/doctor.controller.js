@@ -196,30 +196,39 @@ const deleteAllDoctors = async (req, res, next) => {
 const testingDoctors = async (req, res, next) => {
   try {
     const io = req.app.get("io"); // Get io instance
-    const onlineUsers = req.app.get("onlineUsers"); // Get Online Users Map
-    const { salesPersonId, message } = req.body;
+        
+    io.emit("test-emit","babu aa gaya kya")
 
-    if (!salesPersonId || !message) {
-      return res.status(400).json({ error: "salesPersonId and message required" });
-    }
+    // // const onlineUsers = req.app.get("onlineUsers"); // Get Online Users Map
+    // // const { salesPersonId, message } = req.body;
 
-    // Check if user is online
-    const socketId = onlineUsers.get(salesPersonId);
+    // if (!salesPersonId || !message) {
+    //   return res.status(400).json({ error: "salesPersonId and message required" });
+    // }
+    // io.emit("aao-raja", "aa-gyla ka");
 
-    if (socketId) {
-      console.log(`📨 Trying to emit message to Salesperson: ${salesPersonId}`);
+    // // Check if user is online
+    // const socketId = onlineUsers.get(salesPersonId);
+
+    // if (socketId) {
+    //   console.log(`📨 Trying to emit message to Salesperson: ${salesPersonId}`);
       
-      io.to(socketId).emit("privateMessage", {
-        message,
-        time: new Date().toISOString(),
-      });
+    //   io.to(socketId).emit("privateMessage", {
+    //     message,
+    //     time: new Date().toISOString(),
+    //   });
 
-      console.log(`✅ Message emitted to ${salesPersonId} with socketId: ${socketId}`);
-      return res.status(200).json({ success: `Message sent to ${salesPersonId}` });
-    } else {
-      console.log(`⚠️ Salesperson ${salesPersonId} is not online.`);
-      return res.status(404).json({ error: `User ${salesPersonId} is not online` });
-    }
+     
+
+    //   console.log(`✅ Message emitted to ${salesPersonId} with socketId: ${socketId}`);
+    //   return res.status(200).json({ success: `Message sent to ${salesPersonId}` });
+    // } else {
+    //   console.log(`⚠️ Salesperson ${salesPersonId} is not online.`);
+    //   return res.status(404).json({ error: `User ${salesPersonId} is not online` });
+    // }
+     
+    res.status(200).json({ success: "Testing Doctors" });
+
   } catch (error) {
     console.log("🚨 Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });

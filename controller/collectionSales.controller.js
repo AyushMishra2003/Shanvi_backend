@@ -11,6 +11,9 @@ const addCollectionSales = async (req, res, next) => {
 
         const { name, email, password } = req.body
 
+ 
+        
+
         if (!name || !email || !password) {
             return next(new AppError("All field are Required", 400))
         }
@@ -59,7 +62,11 @@ const getCollectionSales = async (req, res, next) => {
 const loginCollectionSales = async (req, res, next) => {
     try {
 
-        const { email, password } = req.body
+        const { email, password ,lat,lng,address} = req.body
+
+        console.log(req.body)
+
+        const io = req.app.get("io"); 
 
         if (!email || !password) {
             return next(new AppError("All field are Required"))
@@ -74,6 +81,20 @@ const loginCollectionSales = async (req, res, next) => {
         if (validSales.password != password) {
             return next(new AppError("Password not Match", 400))
         }
+
+        if(lat){
+            validSales.lat=lat
+        }
+        if(lng){
+            validSales.lng=lng
+        }
+        if(address){
+            validSales.address=address
+        }
+
+        await validSales.save()
+
+        io.emit("aao-raja", "aa-gyla ka");
 
         res.status(200).json({
             success: true,

@@ -7,6 +7,7 @@ import sendEmail from '../utils/email.utlis.js';
 import bcrypt from 'bcryptjs'
 import { error, log } from 'console';
 import validator from 'validator'
+import OrderModel from '../models/order.model.js';
 
 // Email Transporter Setup
 
@@ -509,14 +510,26 @@ export const userOrder=async(req,res,next)=>{
        return next(new AppError(error.message,500))
     }
 
+    const allOrders=await OrderModel.find({userId:id})
+    
+    let reversedOrders
+
+    if(allOrders.length!=0){
+       reversedOrders = allOrders.reverse(); 
+      console.log("revserse order is ",reversedOrders);
+      
+    }
+
     res.status(200).json({
        success:true,
        message:"Order Details",
-       data:validUser
+      data:reversedOrders
     })
 
 
    }catch(error){
+    console.log(error);
+    
      return next(new AppError(error.message,500))
    }
 }

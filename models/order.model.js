@@ -56,6 +56,26 @@ const orderSchema = new Schema(
             default: null,
         },
 
+        lat:{
+            type:String,
+            default:""  
+        },
+        lng:{
+            type:String,   
+            default:""
+        }
+
+        // userLoginDirection:{
+        //     lat:{
+        //         type:String,
+        //         default:""
+        //     },
+        //     lng:{
+        //         type:String,
+        //         default:""
+        //     }
+        // }
+
 
     },
     {
