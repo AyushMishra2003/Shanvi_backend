@@ -30,6 +30,8 @@ import MessageModel from "./models/Message.model.js";
 import collectionRouter from "./routes/collection.route.js";
 import adminRouter from "./routes/admin.route.js";
 
+import notificationRoutes from  './controller/notification.js'
+
 
 
 config();
@@ -90,10 +92,17 @@ app.use("/api/v1/gallery",galleryRoute)
 app.use("/api/v1/pathology",pathologyRouter)
 app.use("/api/v1/admin",adminRouter)
 app.use("/api/v1/user",userRoute)
+
+
+app.use("/api/notification",notificationRoutes)
+
 app.use("/api/v1/banner",bannerRoute)
 app.use("/api/v1/collection",collectionRouter)
 app.post("/api/v1/utlis",addUtils)
 app.get("/api/v1/utlis/:url",getUtils)
+
+
+
 
 
 

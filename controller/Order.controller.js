@@ -110,11 +110,7 @@ const addOrder = async (req, res, next) => {
       io.emit("orderPlaced", newCheckout);
 
 
-     
- 
-
-
-
+  
       const todaySummary = await getTodayOrdersSummaryData();
       io.emit("todayOrdersSummary", todaySummary); // 🔥 Total summary bhi emit karo
 

@@ -10,6 +10,7 @@ import checkoutModel from './models/checkout.model.js';
 import collectionModel from './models/collectionSales.js';
 import mongoose from 'mongoose';
 import OrderModel from './models/order.model.js';
+import User from './models/user.model.js';
 
 
 config();
@@ -50,12 +51,12 @@ function generateRandomLatLng() {
 
   console.log("Random LatLng:", randomLat, randomLng);
 
-  return { lat: randomLat, lng: randomLng };  
+  return { lat: randomLat, lng: randomLng };
 }
 
 
-const onlineUsers = new Map(); // SalesPersonId => SocketId
-
+const onlineUsers = new Map();
+const onlineActiveUsers = new Map()
 
 
 
@@ -73,45 +74,57 @@ io.on("connection", (socket) => {
     console.log(`🏠 Salesperson ${salesPersonId} joined room: ${salesPersonId}`);
     socket.join(salesPersonId); // Join Room
     onlineUsers.set(salesPersonId, socket.id);
-
-
-    io.emit("test-emit", `🚀 Babu ${salesPersonId} joined the room`);
     console.log(`✅ Emitted to all: Babu ${salesPersonId} joined`);
   });
 
   socket.on("sales-dashboard-join", async (data) => {
 
+    console.log("sales-dashboard-join", data);
 
-
-    console.log("sales -dashboard ", data);
     const validSales = await collectionModel.findById(data.salesId);
+    let validOrder
+    let validUser
+    if (validSales) {
+      validOrder = await OrderModel.findOne({
+        assignedTo: data.salesId,
+        bookingStatus: "ongoing"
+      });
+    }
+    if (validOrder) {
+      validUser = await User.findById(validOrder.userId)
+    }
+
+
     if (validSales) {
       validSales.lat = data.lat;
       validSales.lng = data.lng;
     }
     await validSales.save();
-    const socketId = onlineUsers.get(data.salesId);
-    if (socketId) {
-      io.to(socketId).emit("updated-sales-lat-lng", {
-        lat: data.lat,
-        lng: data.lng,
+
+
+    const getSalesData = onlineActiveUsers.get(data.salesId);
+      
+    console.log("babu ko bheja jaa raha hai ",getSalesData);
+    
+
+    if (getSalesData) {
+      io.to(getSalesData.socketId).emit("get-updated-sales-lat-lng", {
+        sales_lat: data.lat,
+         sales_lng: data.lng
       });
 
+      // const { lat, lng } = generateRandomLatLng();
 
 
-      const { lat, lng } = generateRandomLatLng();
-    
-      console.log("generated random lat lomg in function is",lat,lng)
-      // io.emit("get-updated-sales-lat-lng", { sales_lat: lat, sales_lng: lng })
+      // io.to(socket).emit("get-updated-sales-lat-lng", { sales_lat: data.lat, sales_lng: data.lng })
 
-      io.emit("get-updated-sales-lat-lng", { sales_lat: data.lat, sales_lng: data.lng })
+      // io.emit("get-updated-sales-lat-lng", { sales_lat: data.lat, sales_lng: data.lng })
 
     }
-      
+    
 
-    io.emit("test-emit", `🚀 Babu ${""} joined the room`);
 
-    socket.emit("get-updated-sales-lat-lng", { sales_lat: validSales.lat, sales_lng: validSales.lng })
+    // socket.emit("get-updated-sales-lat-lng", { sales_lat: validSales.lat, sales_lng: validSales.lng })
 
   })
 
@@ -171,33 +184,51 @@ io.on("connection", (socket) => {
   });
 
   socket.on("get-sales-lat-lng", async (data) => {
-    console.log("get sales lat long babu", data);
-
     const validOrder = await OrderModel.findById(data.orderDetailId);
 
     const validSales = await collectionModel.findById(validOrder.assignedTo);
 
+    // Mapping salesId to userId instead of userId to socket
+    socket.join(validOrder.userId);
+    onlineActiveUsers.set(validSales._id.toString(), {
+      userId: validOrder.userId,
+      socketId: socket.id,
+    });
 
-    socket.emit("get-updated-sales-lat-lng", { sales_lat: validSales.lat, sales_lng: validSales.lng })
+    
+    
+    
+    const getSalesData = onlineActiveUsers.get(validSales._id.toString());
+    
+    
+  
+    
+
+    if (getSalesData) {
+      io.to(getSalesData.socketId).emit("get-updated-sales-lat-lng", {
+        sales_lat: validSales.lat,
+         sales_lng: validSales.lng
+      });
+
+      // const { lat, lng } = generateRandomLatLng();
+
+
+      // io.to(socket).emit("get-updated-sales-lat-lng", { sales_lat: data.lat, sales_lng: data.lng })
+
+      // io.emit("get-updated-sales-lat-lng", { sales_lat: data.lat, sales_lng: data.lng })
+
+    }
+
+    // socket.emit("get-updated-sales-lat-lng", { sales_lat: validSales.lat, sales_lng: validSales.lng })
 
   })
 
 
-  // Join room when salesPerson logs in
 
-  // socket.on("joinRoom", (salesPersonId) => {
-  //   socket.join(salesPersonId);
-  //   onlineUsers.set(salesPersonId, socket.id);
-  //   console.log(`🟡 Online Users Map:`, [...onlineUsers.entries()]);
-  // });
-
-
-
-
-  // 6. Handle Disconnection
-  // socket.on("disconnect", () => {
-  //   console.log("🔴 Client Disconnected:", socket.id);
-  // });
+  socket.on("check-welcome",(data)=>{
+    console.log("welcomep-check",data)
+    socket.emit("check-karo","laad-chaata ")
+  })
 
   socket.on("disconnect", () => {
     console.log("❌ Client disconnected:", socket.id);
@@ -207,12 +238,22 @@ io.on("connection", (socket) => {
         console.log(`🛑 Removed ${key} from onlineUsers.`);
       }
     }
+
+
+    for (let [key, value] of onlineActiveUsers.entries()) {
+      if (value.socketId === socket.id) {
+        onlineActiveUsers.delete(key);
+        console.log(`🛑 Removed ${key} from onlineActiveUsers.`);
+      }
+    }
   });
+
+
 });
 
 
-app.set("io", io); // Store Socket.io instance in app for global access
-app.set("onlineUsers", onlineUsers); // 👈 Store in app
+app.set("io", io); 
+app.set("onlineUsers", onlineUsers); 
 
 server.listen(PORT, async () => {
   await ConnectionToDB();

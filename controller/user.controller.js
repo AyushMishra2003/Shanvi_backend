@@ -534,6 +534,54 @@ export const userOrder=async(req,res,next)=>{
    }
 }
 
+export const userAllOrder=async(req,res,next)=>{
+  try{
+   
+    console.log("ayush mishra ji---");
+    
+
+   const token = req.cookies.authToken; // Get the token from the HTTP-only cookie
+
+   const decoded = verifyToken(token);
+
+   console.log(decoded);
+   
+
+   const validUser=await User.findById(decoded.userId).populate("orderDetails")
+   console.log(validUser);
+   
+   
+   if(!validUser){
+      return next(new AppError(error.message,500))
+   }
+
+   const allOrders=await OrderModel.find({userId:validUser?._id})
+   
+   let reversedOrders
+
+   if(allOrders.length!=0){
+      reversedOrders = allOrders.reverse(); 
+     console.log("revserse order is ",reversedOrders);
+     
+   }
+
+   res.status(200).json({
+      success:true,
+      message:"Order Details",
+     data:{
+        user:validUser,
+        orders:reversedOrders
+     }
+   })
+
+
+  }catch(error){
+   console.log(error);
+   
+    return next(new AppError(error.message,500))
+  }
+}
+
 
 
 export const isLogin = async (req, res, next) => {

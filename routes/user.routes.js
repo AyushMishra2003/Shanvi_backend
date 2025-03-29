@@ -1,14 +1,12 @@
 import  { Router } from 'express';
-import { forgotPassword, isLogin, login, loginwithOrder, logout, register, resendVerificationCode, resetPassword, updateUser, userOrder, verifyUser } from '../controller/user.controller.js';
-// import { register } from '../controller/user.controller.js';
-// import { 
-//   register, verifyUser, login, logout, 
-//   resendVerificationCode, forgotPassword, resetPassword 
-// } from '../controllers/user.controller.js';
+import { forgotPassword, isLogin, login, loginwithOrder, logout, register, resendVerificationCode, resetPassword, updateUser, userAllOrder, userOrder, verifyUser } from '../controller/user.controller.js';
+
 
 const userRoute = Router()
 
+userRoute.get('/all/order',userAllOrder);
 userRoute.get('/order/:id',userOrder);
+
 userRoute.put('/profile/:id',updateUser);
 userRoute.post('/register', register);
 userRoute.post('/verify', verifyUser);

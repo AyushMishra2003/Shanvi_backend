@@ -4,6 +4,8 @@ import AppError from "../utils/error.utlis.js"
 import cloudinary from "cloudinary";
 import fs from "fs/promises";
 import { startOfDay, endOfDay } from 'date-fns';
+import sendNotification from "./notification.js";
+import dotenv from "dotenv";
 
 
 const addCollectionSales = async (req, res, next) => {
@@ -11,8 +13,8 @@ const addCollectionSales = async (req, res, next) => {
 
         const { name, email, password } = req.body
 
- 
-        
+
+
 
         if (!name || !email || !password) {
             return next(new AppError("All field are Required", 400))
@@ -62,11 +64,11 @@ const getCollectionSales = async (req, res, next) => {
 const loginCollectionSales = async (req, res, next) => {
     try {
 
-        const { email, password ,lat,lng,address} = req.body
+        const { email, password, lat, lng, address } = req.body
 
         console.log(req.body)
 
-        const io = req.app.get("io"); 
+        const io = req.app.get("io");
 
         if (!email || !password) {
             return next(new AppError("All field are Required"))
@@ -82,14 +84,14 @@ const loginCollectionSales = async (req, res, next) => {
             return next(new AppError("Password not Match", 400))
         }
 
-        if(lat){
-            validSales.lat=lat
+        if (lat) {
+            validSales.lat = lat
         }
-        if(lng){
-            validSales.lng=lng
+        if (lng) {
+            validSales.lng = lng
         }
-        if(address){
-            validSales.address=address
+        if (address) {
+            validSales.address = address
         }
 
         await validSales.save()
@@ -112,7 +114,7 @@ const loginCollectionSales = async (req, res, next) => {
 const assignedOrder = async (req, res, next) => {
     try {
         const { orderId, salesId } = req.body
- 
+
 
         if (!orderId || !salesId) {
             return next(new AppError("Details are Required", 400))
@@ -145,40 +147,80 @@ const assignedOrder = async (req, res, next) => {
 
         await validOrder.save()
 
-
-
-
-
         // ------------ Ayush Mishra/___________
 
 
 
         const io = req.app.get("io"); // Get io instance
         const onlineUsers = req.app.get("onlineUsers"); // Get Online Users Map
-        const message="new-order-assigned"
+        const message = "new-order-assigned"
         // const { salesPersonId, message } = req.body;
 
         // if (!salesPersonId || !message) {
         //   return res.status(400).json({ error: "salesPersonId and message required" });
         // }
 
-        console.log(salesId);
 
-        console.log(validSales);
-        
-        
 
         // Check if user is online
         const socketId = onlineUsers.get(salesId);
 
-        console.log(socketId);
 
         if (socketId) {
             io.to(socketId).emit("privateMessage", {
                 message,
                 time: new Date().toISOString(),
-              });
+            });
         }
+
+        console.log(validOrder);
+
+
+
+        //-------------------- Notification Send-----//-----------------//
+        const title = "New Order Assigned";
+        const body = `
+        📢 *Order Assignment Notification*
+        
+        Dear Team Member,
+        
+        You have been assigned a new order. Please find the details below:
+        
+        🏷️ *Order ID:* ${validOrder._id}  
+        👤 *Patient Name:* ${validOrder.patientName}  
+        🎂 *Age/Gender:* ${validOrder.patientAge} / ${validOrder.patientGender}  
+        🧪 *Test Category:* ${validOrder.category}  
+        🔬 *Test Name:* ${validOrder.orderName}  
+        📦 *Order Type:* ${validOrder.orderType}  
+        💰 *Order Price:* ₹${validOrder.orderPrice}  
+        📅 *Booking Date:* ${new Date(validOrder.bookingDate).toLocaleDateString()}  
+        ⏰ *Booking Time:* ${new Date(validOrder.bookingTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}  
+        📍 *Location:* ${validOrder.lat}, ${validOrder.lng}  
+        📊 *Booking Status:* ${validOrder.bookingStatus}  
+        📈 *Report Status:* ${validOrder.reportStatus}  
+        
+        📅 *Order Placed On:* ${new Date(validOrder.orderDateTime).toLocaleString()}  
+        
+        Please proceed with the necessary actions and update the report status once completed.  
+        
+        ✅ Thank you!  
+        `;
+
+        const deviceToken = validSales.fcmToken;
+
+
+        console.log("device token in controller is", deviceToken);
+
+
+
+
+
+
+        // const deviceToken = validSales.fcmToken; 
+
+        // ✅ Call the Notification Function
+        await sendNotification(deviceToken, title, body);
+
 
 
         res.status(200).json({
@@ -377,6 +419,44 @@ const collectionOrderSummary = async (req, res, next) => {
 
 
 
+
+const saveTokenSales = async (req, res, next) => {
+    try {
+
+        console.log("aaya ki nahi ");
+
+
+        const { token, id } = req.body
+        const validSales = await collectionModel.findById(id)
+
+        console.log(req.body);
+
+
+        if (!validSales) {
+            return next(new AppError("Sales Not Found", 400))
+        }
+
+        validSales.fcmToken = token
+
+        await validSales.save()
+
+        console.log(validSales);
+
+
+        res.status(200).json({
+            success: true,
+            message: "Token Added Succesfully",
+
+        })
+
+
+    } catch (error) {
+        return next(new AppError(error.message, 500))
+    }
+}
+
+
+
 export {
     addCollectionSales,
     getCollectionSales,
@@ -384,5 +464,6 @@ export {
     assignedOrder,
     getCollectionSalesDetail,
     orderReportAdded,
-    collectionOrderSummary
+    collectionOrderSummary,
+    saveTokenSales
 }
