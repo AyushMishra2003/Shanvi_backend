@@ -181,13 +181,12 @@ export const loginAdmin = async (req, res, next) => {
     user.token = token
 
     // Set the token in an HTTP-only secure cookie
-    res.cookie('authToken', token, {
-      httpOnly: false,
-      secure: true,
-      sameSite: 'None',
-      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days in milliseconds
+    res.cookie("authToken", token, {
+      httpOnly: true, // For security
+      secure: process.env.NODE_ENV === "production", // Only true in production
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", 
+      maxAge: 2 * 24 * 60 * 60 * 1000,
     });
-
  
     await user.save()
 

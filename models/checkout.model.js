@@ -25,6 +25,9 @@ const checkoutSchema = new Schema(
       addressType:{
         type:String,
       },
+      selectedPlace:{
+        type:String
+      },
       pinCode:{
         type:String,
       },

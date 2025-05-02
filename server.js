@@ -11,7 +11,7 @@ import collectionModel from './models/collectionSales.js';
 import mongoose from 'mongoose';
 import OrderModel from './models/order.model.js';
 import User from './models/user.model.js';
-
+import redisClient from './config/redisClient.js';
 
 config();
 
@@ -36,6 +36,11 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
+
+
+
+
+
 
 function generateRandomLatLng() {
   const baseLat = 26.8625781; // Base latitude
@@ -256,6 +261,7 @@ app.set("io", io);
 app.set("onlineUsers", onlineUsers); 
 
 server.listen(PORT, async () => {
+  redisClient.connect()
   await ConnectionToDB();
   console.log(`🚀 App is running at : ${PORT}`);
 });

@@ -160,6 +160,40 @@ const updatePathologyDetails = async (req, res, next) => {
 };
 
 
+//  paggination pathology
+
+const getPathologyDetailsWithPagination = async (req, res, next) => {
+      try{
+       
+        const page = parseInt(req.query.page) || 1;   
+        const limit = parseInt(req.query.limit) || 10; 
+    
+        const skip = (page - 1) * limit;             
+    
+        const allpathology = await PathologyDetail.find().skip(skip).limit(limit); 
+        const total = await PathologyDetail.countDocuments();    
+
+        res.status(200).json({
+           success:true,
+           message:"Paggination Pathology details",
+           data:{
+               allpathology,
+               total
+           }
+        })
+
+
+      }catch(error){
+         return  next(new AppError(error.message,500))
+      }
+}
+
+
+
+
+
+
+
 // Delete Pathology Details
 const deletePathologyDetails = async (req, res, next) => {
   try {
@@ -379,5 +413,6 @@ export {
   addLabTag,
   getLabTag,
   deleteLabTag,
-  editLabTag
+  editLabTag,
+  getPathologyDetailsWithPagination
 }

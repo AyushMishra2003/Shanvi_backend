@@ -29,8 +29,10 @@ import { updateSlugDetails } from "./controller/test.controller.js";
 import MessageModel from "./models/Message.model.js";
 import collectionRouter from "./routes/collection.route.js";
 import adminRouter from "./routes/admin.route.js";
-
 import notificationRoutes from  './controller/notification.js'
+import conversationRouter from "./routes/coversation.route.js";
+import redisClient from "./config/redisClient.js";
+import openingRouter from "./routes/opening.route.js";
 
 
 
@@ -40,7 +42,6 @@ config();
 // updateSlugs(ServiceModel);
 // updateServiceDetailSlugs(ServiceDetailModel)
 // updatePackageSlugs(PackageDetail)
-
 // updateTestSlugs(TestDetailModel)
 
 
@@ -92,19 +93,13 @@ app.use("/api/v1/gallery",galleryRoute)
 app.use("/api/v1/pathology",pathologyRouter)
 app.use("/api/v1/admin",adminRouter)
 app.use("/api/v1/user",userRoute)
-
-
 app.use("/api/notification",notificationRoutes)
-
+app.use("/api/v1/opening",openingRouter)
 app.use("/api/v1/banner",bannerRoute)
 app.use("/api/v1/collection",collectionRouter)
+app.use("/api/v1/conversation",conversationRouter)
 app.post("/api/v1/utlis",addUtils)
 app.get("/api/v1/utlis/:url",getUtils)
-
-
-
-
-
 
 
 app.get("/api/v1/message", async (req, res) => {
@@ -138,14 +133,30 @@ app.get("/api/v1/message", async (req, res) => {
 });
 
 
-app.post("/test/updated",updateSlugDetails)
+// app.post("/test/updated",updateSlugDetails)
 
 
+app.post("/test", async(req, res) => {
+  await redisClient.set('mishra', 'Mishra Ayush Don');
+  res.status(200).json({
+    message: "Cached data updated",
+    
+  });
+});
 
+app.get("/test", async(req, res) => {
+  
+  const cachedData=await redisClient.get("mishra")
 
-app.get("/test", (req, res) => {
+  let data1=''
+
+  if(cachedData){
+    data1=cachedData
+  }
+
   res.status(200).json({
     message: "testis running and ready.",
+    data:data1
   });
 });
 

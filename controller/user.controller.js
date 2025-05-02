@@ -8,6 +8,7 @@ import bcrypt from 'bcryptjs'
 import { error, log } from 'console';
 import validator from 'validator'
 import OrderModel from '../models/order.model.js';
+import checkoutModel from '../models/checkout.model.js';
 
 // Email Transporter Setup
 
@@ -309,7 +310,7 @@ export const loginwithOrder = async (req, res, next) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      user = new User({ email });
+      user = new User({ email ,password:"12345"});
       await user.save();
     }
 
@@ -365,7 +366,7 @@ export const loginwithOrder = async (req, res, next) => {
 
     // Set the token in an HTTP-only secure cookie
     res.cookie('authToken', token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: 'None',
       maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days in milliseconds
@@ -449,7 +450,10 @@ export const resendVerificationCode = async (req, res) => {
 
     await sendEmail(email, 'New Verification Code', `Your new verification code is: ${newCode}`);
 
-    res.status(200).json({ message: 'Verification code resent. Check your email.' });
+    res.status(200).json({ 
+      success:true,
+       message: 'Verification code resent. Check your email.' 
+    })
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -469,7 +473,10 @@ export const forgotPassword = async (req, res) => {
 
     await sendEmail(email, 'Password Reset Code', `Your password reset code is: ${resetCode}`);
 
-    res.status(200).json({ message: 'Password reset code sent to email.' });
+    res.status(200).json({ 
+        success:true,
+        message: 'Password reset code sent to email.' 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -492,7 +499,10 @@ export const resetPassword = async (req, res) => {
     user.verificationCode = null;
     await user.save();
 
-    res.status(200).json({ message: 'Password reset successful. You can now log in.' });
+    res.status(200).json({ 
+      success:true,
+      message: 'Password reset successful. You can now log in.'
+     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -500,46 +510,45 @@ export const resetPassword = async (req, res) => {
 
 
 export const userOrder=async(req,res,next)=>{
-   try{
+  try{
 
-    const {id}=req.params
+   const {id}=req.params
 
-    const validUser=await User.findById(id).populate("orderDetails")
-    
-    if(!validUser){
-       return next(new AppError(error.message,500))
-    }
-
-    const allOrders=await OrderModel.find({userId:id})
-    
-    let reversedOrders
-
-    if(allOrders.length!=0){
-       reversedOrders = allOrders.reverse(); 
-      console.log("revserse order is ",reversedOrders);
-      
-    }
-
-    res.status(200).json({
-       success:true,
-       message:"Order Details",
-      data:reversedOrders
-    })
-
-
-   }catch(error){
-    console.log(error);
-    
-     return next(new AppError(error.message,500))
+   const validUser=await User.findById(id).populate("orderDetails")
+   
+   if(!validUser){
+      return next(new AppError(error.message,500))
    }
+
+   const allOrders=await OrderModel.find({userId:id})
+   
+   let reversedOrders
+
+   if(allOrders.length!=0){
+      reversedOrders = allOrders.reverse(); 
+     console.log("revserse order is ",reversedOrders);
+     
+   }
+
+   res.status(200).json({
+      success:true,
+      message:"Order Details",
+     data:reversedOrders
+   })
+
+
+  }catch(error){
+   
+    return next(new AppError(error.message,500))
+  }
 }
+
 
 export const userAllOrder=async(req,res,next)=>{
   try{
    
-    console.log("ayush mishra ji---");
-    
-
+ 
+  
    const token = req.cookies.authToken; // Get the token from the HTTP-only cookie
 
    const decoded = verifyToken(token);
@@ -587,7 +596,7 @@ export const userAllOrder=async(req,res,next)=>{
 export const isLogin = async (req, res, next) => {
   try {
     // Extract token from headers (Bearer token) or body
-    const token = req.cookies.authToken; // Get the token from the HTTP-only cookie
+    const token = req.cookies.authToken; 
 
     const decoded = verifyToken(token);
 
@@ -621,7 +630,7 @@ export const isLogin = async (req, res, next) => {
     // Token is valid, and user exists
     res.status(200).json({
       success: true,
-
+      message:"You are Looged In"
     });
 
   } catch (error) {

@@ -63,7 +63,7 @@ const addCV = async (req, res) => {
     }
 
     const savedCV = await newCV.save();
-    const adminEmail = "shanyaglobal.lko@gmail.com"
+    const adminEmail = "ayushm185@gmail.com"
 
     // Prepare email content for the admin
     const subject = `📝 New Job Application - ${position}`;
@@ -146,6 +146,8 @@ const addCV = async (req, res) => {
 // Controller to handle fetching CVs
  const getCVs = async (req, res) => {
   try {
+    console.log("aaya hu ");
+    
     const cvs = await CarrerModel.find(); // Fetch all CVs
     res.status(200).json({
       success: true,

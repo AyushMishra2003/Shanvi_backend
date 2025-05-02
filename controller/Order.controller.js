@@ -5,6 +5,7 @@ import User from "../models/user.model.js";
 import sendEmail from "../utils/email.utlis.js"
 import AppError from "../utils/error.utlis.js"
 import axios from "axios";
+import { log } from "console";
 
 
 const getCoordinates = async (location) => {
@@ -13,13 +14,13 @@ const getCoordinates = async (location) => {
       params: {
         address: location,
         key: 'AIzaSyC9ZOZHwHmyTWXqACqpZY2TL7wX2_Zn05U',
-        region: 'IN' 
+        region: 'IN'
       }
     });
 
     if (response.data && response.data.results.length > 0) {
       const { lat, lng } = response.data.results[0].geometry.location;
-      return { lat, lng};
+      return { lat, lng };
     } else {
       throw new Error('Location not found in India');
     }
@@ -36,18 +37,21 @@ const addOrder = async (req, res, next) => {
     let orders = req.body;
 
 
+
     if (!Array.isArray(orders)) orders = [orders];
     let userEmail = ""
 
     let newCheckout;
-    const io = req.app.get("io"); 
+    const io = req.app.get("io");
+
+
 
     for (let order of orders) {
-      const { email, address, phoneNumber, altPhoneNumber, orderDetails, pinCode } = order;
+      const { email, address, phoneNumber, altPhoneNumber, orderDetails, pinCode ,selectedPlace,addressType} = order;
 
+      
       userEmail = email
       if (!email || !address || !phoneNumber || !altPhoneNumber) {
-        console.log('coming');
 
         return next(new AppError("Missing required fields or invalid order details format", 400));
       }
@@ -62,7 +66,7 @@ const addOrder = async (req, res, next) => {
 
           return next(new AppError("Invalid patient details or tests missing", 400));
         }
-        const address123=await getCoordinates(order.address);
+        const address123 = await getCoordinates(order.address);
 
         for (let test of tests) {
           const newOrder = await OrderModel.create({
@@ -79,13 +83,10 @@ const addOrder = async (req, res, next) => {
             bookingTime: moment(`${test.bookingDate} ${test.bookingTime}`, "YYYY-MM-DD hh:mm A").toDate(),
             reportStatus: "not ready",
             userId: user._id,
-            lat:address123.lat,
-            lng:address123.lng
+            lat: address123.lat,
+            lng: address123.lng
 
           });
-
-          console.log(newOrder);
-          
 
           orderIds.push(newOrder._id);
         }
@@ -97,7 +98,9 @@ const addOrder = async (req, res, next) => {
         address,
         phoneNumber,
         altPhoneNumber,
-        pinCode
+        addressType,
+        pinCode,
+        selectedPlace
       });
 
       if (!newCheckout) {
@@ -110,7 +113,7 @@ const addOrder = async (req, res, next) => {
       io.emit("orderPlaced", newCheckout);
 
 
-  
+
       const todaySummary = await getTodayOrdersSummaryData();
       io.emit("todayOrdersSummary", todaySummary); // 🔥 Total summary bhi emit karo
 
@@ -195,6 +198,8 @@ const addOrder = async (req, res, next) => {
       data: newCheckout,
     });
 
+
+
   } catch (error) {
     console.error("Error creating order:", error);
     return next(new AppError(error.message, 500));
@@ -206,7 +211,7 @@ const getOrder = async (req, res, next) => {
   try {
     const orders = await checkoutModel
       .find()
-      .populate("userDetails", "name email phoneNumber") // Populate user details
+      .populate("userDetails", "name email phoneNumber addressType  selectedPlace")
       .populate({
         path: "orderDetails",
         model: "OrderModel",
@@ -236,7 +241,7 @@ const getOrderDetail = async (req, res, next) => {
 
     const orders = await checkoutModel
       .findById(id)
-      .populate("userDetails", "name email phoneNumber") // Populate user details
+      .populate("userDetails", "name email phoneNumber addressType  selectedPlace")
       .populate({
         path: "orderDetails",
         model: "OrderModel",
@@ -356,9 +361,8 @@ const getLatestOrder = async (req, res, next) => {
 const getHomeCollectionOrder = async (req, res, next) => {
   try {
 
-
     const allHomeCollection = await OrderModel.find({ orderType: "home collection" })
-      .populate("userId") 
+      .populate("userId")
       .populate("assignedTo");
 
 
@@ -480,6 +484,39 @@ const changeOrderStatus = async (req, res, next) => {
 
 
 
+const getLatestHomeCollectionOrder = async (req, res, next) => {
+  try {
+    const oneHourAgo = moment().subtract(20, "hour").toDate();
+
+    const startOfDay = moment().startOf("day").toDate(); // Aaj ke din ka start time
+    const endOfDay = moment().endOf("day").toDate(); // Aaj ke din ka end time
+
+    const bookings = await OrderModel.find({
+      orderDateTime: { $gte: startOfDay, $lte: endOfDay }, // Aaj ke din ki bookings
+      orderType: "home collection"
+    })
+
+    // const bookings=await OrderModel.find({"orderType": "home collection",})
+
+    console.log("booking is",bookings);
+
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: bookings,
+    });
+  } catch (error) {
+    console.error("Error fetching last hour bookings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+}
+
+
+
 export {
   addOrder,
   getOrder,
@@ -488,5 +525,6 @@ export {
   getLatestOrder,
   getHomeCollectionOrder,
   getHomeCollectionDetails,
-  changeOrderStatus
+  changeOrderStatus,
+  getLatestHomeCollectionOrder
 }

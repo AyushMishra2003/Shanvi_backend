@@ -58,8 +58,7 @@ const addBanner = async (req, res, next) => {
 
 const getBanner = async (req, res, next) => {
     try {
-   
-        console.log("chala");
+
         
         const { types } = req.params
 
@@ -88,7 +87,10 @@ const getBanner = async (req, res, next) => {
 const editBanner = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, types, index } = req.body;
+        const { name, types, index,url} = req.body;
+
+
+        console.log(req.body)
 
         if (!id) {
             return next(new AppError("Banner ID is required", 400));
